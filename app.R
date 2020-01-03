@@ -162,60 +162,7 @@ server <- function(input, output) {
       }
     }
     else if (input$rosterType == "Waterford") {
-      df <- filedata()
-
-      df %>%
-        distinct(student_studentNumber, .keep_all = T) %>%
-        mutate(student_grade = replace(student_grade, student_grade == "KF", "K")) %>%
-        mutate(student_grade = replace(student_grade, student_grade == "01", "1st Grade")) %>%
-        mutate(student_grade = replace(student_grade, student_grade == "02", "2nd Grade")) %>%
-        mutate("firstName" = gsub(" ", "", str_remove_all(student_firstName, "[~!@#$%^&*(){}_+:<>?,./;'-]"))) %>%
-        mutate("middleName" = gsub(" ", "", str_remove_all(student_middleName, "[~!@#$%^&*(){}_+:<>?,./;'-]"))) %>%
-        mutate("lastName" = gsub(" ", "", str_remove_all(student_lastName, "[~!@#$%^&*(){}_+:<>?,./;'-]"))) %>%
-        mutate("preferredName" = gsub(" ", "", str_remove_all(coalesce(student_alias, firstName), "[~!@#$%^&*(){}_+:<>?,./;'-]"))) %>%
-        mutate("classGrade" = student_grade) %>%
-        mutate("schoolName" = substr(student_calendarName, 6, 100000)) %>%
-        add_column(
-          "sisName" = NA,
-          "sisID" = NA,
-          "schoolSISName" = NA,
-          "schoolSISID" = NA,
-          "pLanguage" = NA,
-          "Ethnicity" = NA,
-          "Disabilities" = NA,
-          "hStatus" = NA,
-          "sp" = NA,
-          "Email" = NA,
-          "Username" = NA,
-          "Password" = NA
-        ) %>%
-        select(
-          "First Name" = firstName,
-          "Middle Name" = middleName,
-          "Last Name" = lastName,
-          # "Prefered Name"=preferredName,
-          "Unique Student ID" = student_studentNumber,
-          "Grade" = student_grade,
-          "Class Name" = student_homeroomTeacher,
-          "Class Grade" = classGrade,
-          "Class SIS NAME" = sisName,
-          "Class SIS ID" = sisID,
-          "School Name" = schoolName,
-          "School SIS NAME" = schoolSISName,
-          "School SIS ID" = schoolSISID,
-          "Gender" = student_gender,
-          "Birthday" = student_birthdate,
-          "Primary Language" = pLanguage,
-          Ethnicity,
-          Disabilities,
-          "Household Status" = hStatus,
-          "Special Programs" = sp,
-          Email,
-          Username,
-          Password
-        ) -> waterford
-
-      return(waterford)
+      return(WaterfordPrep())
     }
 
     else {
@@ -368,7 +315,6 @@ server <- function(input, output) {
     return(USERS)
   })
   
-  
   #### HMH Class Assignments file ####
   HMHClassAssignments <- reactive({
     filePrep() %>%
@@ -382,6 +328,65 @@ server <- function(input, output) {
         POSITION
       ) -> CLASSASSIGNMENTS
     return(CLASSASSIGNMENTS)
+  })
+  
+  
+  #### Waterford Prepped File ####
+  WaterfordPrep <- reactive({
+    df <- filedata()
+    
+    df %>%
+      distinct(student_studentNumber, .keep_all = T) %>%
+      mutate(student_grade = replace(student_grade, student_grade == "KF", "K")) %>%
+      mutate(student_grade = replace(student_grade, student_grade == "01", "1st Grade")) %>%
+      mutate(student_grade = replace(student_grade, student_grade == "02", "2nd Grade")) %>%
+      mutate("firstName" = gsub(" ", "", str_remove_all(student_firstName, "[~!@#$%^&*(){}_+:<>?,./;'-]"))) %>%
+      mutate("middleName" = gsub(" ", "", str_remove_all(student_middleName, "[~!@#$%^&*(){}_+:<>?,./;'-]"))) %>%
+      mutate("lastName" = gsub(" ", "", str_remove_all(student_lastName, "[~!@#$%^&*(){}_+:<>?,./;'-]"))) %>%
+      mutate("preferredName" = gsub(" ", "", str_remove_all(coalesce(student_alias, firstName), "[~!@#$%^&*(){}_+:<>?,./;'-]"))) %>%
+      mutate("classGrade" = student_grade) %>%
+      mutate("schoolName" = substr(student_calendarName, 6, 100000)) %>%
+      add_column(
+        "sisName" = NA,
+        "sisID" = NA,
+        "schoolSISName" = NA,
+        "schoolSISID" = NA,
+        "pLanguage" = NA,
+        "Ethnicity" = NA,
+        "Disabilities" = NA,
+        "hStatus" = NA,
+        "sp" = NA,
+        "Email" = NA,
+        "Username" = NA,
+        "Password" = NA
+      ) %>%
+      select(
+        "First Name" = firstName,
+        "Middle Name" = middleName,
+        "Last Name" = lastName,
+        # "Prefered Name"=preferredName,
+        "Unique Student ID" = student_studentNumber,
+        "Grade" = student_grade,
+        "Class Name" = student_homeroomTeacher,
+        "Class Grade" = classGrade,
+        "Class SIS NAME" = sisName,
+        "Class SIS ID" = sisID,
+        "School Name" = schoolName,
+        "School SIS NAME" = schoolSISName,
+        "School SIS ID" = schoolSISID,
+        "Gender" = student_gender,
+        "Birthday" = student_birthdate,
+        "Primary Language" = pLanguage,
+        Ethnicity,
+        Disabilities,
+        "Household Status" = hStatus,
+        "Special Programs" = sp,
+        Email,
+        Username,
+        Password
+      ) -> waterford
+    
+    return(waterford)
   })
 
   ## Render the prepped data
