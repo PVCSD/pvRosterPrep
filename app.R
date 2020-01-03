@@ -169,8 +169,8 @@ server <- function(input, output) {
       return(NULL)
     }
   })
-  
-  
+
+
   #### IHT PREP ELEMENTARY LEVEL ####
   ElementaryIHT <- reactive({
     filedata() %>%
@@ -200,14 +200,13 @@ server <- function(input, output) {
       add_column("email" = NA, .before = "secondary email") %>%
       add_column(height = NA, weight = NA, .before = "birthdate") %>%
       add_column(rhr = NA, max = NA, .after = "birthdate") -> ihtELM
-    
-    
+
+
     return(ihtELM)
   })
-  
+
   #### IHT PREP JR. HIGH SCHOOL LEVEL ####
   JrHighSchoolIHT <- reactive({
-    
     filedata() %>%
       as_tibble() %>%
       ## Remove duplicates
@@ -231,9 +230,8 @@ server <- function(input, output) {
       add_column(height = NA, weight = NA, .before = "birthdate") %>%
       add_column(rhr = NA, max = NA, .after = "birthdate") -> ihtJH
     return(ihtJH)
-    
   })
-  
+
   #### IHT PREP HIGH SCHOOL LEVEL ####
   HighSChoolIHT <- reactive({
     filedata() %>%
@@ -261,7 +259,7 @@ server <- function(input, output) {
       add_column(rhr = NA, max = NA, .after = "birthdate") -> ihtHS
     return(ihtHS)
   })
-  
+
   #### HMH Class file ####
   HMHClass <- reactive({
     filedata() %>%
@@ -288,7 +286,7 @@ server <- function(input, output) {
       )) -> CLASS
     return(CLASS)
   })
-  
+
   #### HMH Users file ####
   HMHUsers <- reactive({
     filedata() %>%
@@ -314,7 +312,7 @@ server <- function(input, output) {
       ) -> USERS
     return(USERS)
   })
-  
+
   #### HMH Class Assignments file ####
   HMHClassAssignments <- reactive({
     filePrep() %>%
@@ -329,12 +327,12 @@ server <- function(input, output) {
       ) -> CLASSASSIGNMENTS
     return(CLASSASSIGNMENTS)
   })
-  
-  
+
+
   #### Waterford Prepped File ####
   WaterfordPrep <- reactive({
     df <- filedata()
-    
+
     df %>%
       distinct(student_studentNumber, .keep_all = T) %>%
       mutate(student_grade = replace(student_grade, student_grade == "KF", "K")) %>%
@@ -385,7 +383,7 @@ server <- function(input, output) {
         Username,
         Password
       ) -> waterford
-    
+
     return(waterford)
   })
 
