@@ -134,87 +134,13 @@ server <- function(input, output) {
     ## if it's IHT Do the IHT PREP
     if (input$rosterType == "IHT") {
       if (input$SchoolDropdown == "Elementary") {
-        filedata() %>%
-          as_tibble() %>%
-          ## Remove duplicates
-          distinct(student_studentNumber, .keep_all = T) %>%
-          # fix the kindergarten output from campus to match what IHT needs
-          mutate(student_grade = replace(student_grade, student_grade == "KF", "K")) %>%
-          # replace commas in classroom teacher display name to make splitting easier
-          mutate(courseSection_teacherDisplay = str_replace_all(courseSection_teacherDisplay, ",", "-")) %>%
-          # split the classroom teacher from the PE teacher
-          separate(courseSection_teacherDisplay, into = c("peTeach", "elemteach"), sep = "-", extra = "drop") %>%
-          # filter out the teacher
-          filter(peTeach == input$teacherDropdown) %>%
-          # Select and rename variables
-          select(c(
-            "grade level" = student_grade,
-            "section" = function_IHTClassName,
-            "student id" = student_studentNumber,
-            "last name*" = student_lastName,
-            "first name" = student_firstName,
-            "secondary email" = contacts_email,
-            "gender*" = student_gender,
-            "birthdate" = student_birthdate
-          )) %>%
-          # add the blank columns
-          add_column("email" = NA, .before = "secondary email") %>%
-          add_column(height = NA, weight = NA, .before = "birthdate") %>%
-          add_column(rhr = NA, max = NA, .after = "birthdate") -> ihtELM
-
-
-        return(ihtELM)
+        return(ElementaryIHT())
       }
       else if (input$SchoolDropdown == "Junior High") {
-        filedata() %>%
-          as_tibble() %>%
-          ## Remove duplicates
-          distinct(student_studentNumber, .keep_all = T) %>%
-          # fix the kindergarten output from campus to match what IHT needs
-          mutate(student_grade = replace(student_grade, student_grade == "KF", "K")) %>%
-          unite("IHTClassName", function_IHTClassName, function_Schoolyear) %>%
-          # Select and rename variables
-          select(c(
-            "grade level" = student_grade,
-            "section" = IHTClassName,
-            "student id" = student_studentNumber,
-            "last name*" = student_lastName,
-            "first name" = student_firstName,
-            "secondary email" = contacts_email,
-            "gender*" = student_gender,
-            "birthdate" = student_birthdate
-          )) %>%
-          # add the blank columns
-          add_column("email" = NA, .before = "secondary email") %>%
-          add_column(height = NA, weight = NA, .before = "birthdate") %>%
-          add_column(rhr = NA, max = NA, .after = "birthdate") -> ihtJH
-        return(ihtJH)
+        return(JrHighSchoolIHT())
       }
       else if (input$SchoolDropdown == "High School") {
-        filedata() %>%
-          as_tibble() %>%
-          ## Remove duplicates
-          distinct(student_studentNumber, .keep_all = T) %>%
-          # fix the kindergarten output from campus to match what IHT needs
-          mutate(student_grade = replace(student_grade, student_grade == "KF", "K")) %>%
-          # filter out the teacher
-          filter(str_detect(function_IHTClassName, pattern = input$periodDropdown)) %>%
-          # Select and rename variables
-          select(c(
-            "grade level" = student_grade,
-            "section" = function_IHTClassName,
-            "student id" = student_studentNumber,
-            "last name*" = student_lastName,
-            "first name" = student_firstName,
-            "secondary email" = contacts_email,
-            "gender*" = student_gender,
-            "birthdate" = student_birthdate
-          )) %>%
-          # add the blank columns
-          add_column("email" = NA, .before = "secondary email") %>%
-          add_column(height = NA, weight = NA, .before = "birthdate") %>%
-          add_column(rhr = NA, max = NA, .after = "birthdate") -> ihtHS
-        return(ihtHS)
+        return(HighSchoolIHT())
       }
       else {
         return(NULL)
@@ -349,6 +275,98 @@ server <- function(input, output) {
       return(NULL)
     }
   })
+  
+  
+  #### IHT PREP ELEMENTARY LEVEL ####
+  ElementaryIHT <- reactive({
+    filedata() %>%
+      as_tibble() %>%
+      ## Remove duplicates
+      distinct(student_studentNumber, .keep_all = T) %>%
+      # fix the kindergarten output from campus to match what IHT needs
+      mutate(student_grade = replace(student_grade, student_grade == "KF", "K")) %>%
+      # replace commas in classroom teacher display name to make splitting easier
+      mutate(courseSection_teacherDisplay = str_replace_all(courseSection_teacherDisplay, ",", "-")) %>%
+      # split the classroom teacher from the PE teacher
+      separate(courseSection_teacherDisplay, into = c("peTeach", "elemteach"), sep = "-", extra = "drop") %>%
+      # filter out the teacher
+      filter(peTeach == input$teacherDropdown) %>%
+      # Select and rename variables
+      select(c(
+        "grade level" = student_grade,
+        "section" = function_IHTClassName,
+        "student id" = student_studentNumber,
+        "last name*" = student_lastName,
+        "first name" = student_firstName,
+        "secondary email" = contacts_email,
+        "gender*" = student_gender,
+        "birthdate" = student_birthdate
+      )) %>%
+      # add the blank columns
+      add_column("email" = NA, .before = "secondary email") %>%
+      add_column(height = NA, weight = NA, .before = "birthdate") %>%
+      add_column(rhr = NA, max = NA, .after = "birthdate") -> ihtELM
+    
+    
+    return(ihtELM)
+  })
+  
+  #### IHT PREP JR. HIGH SCHOOL LEVEL ####
+  JrHighSchoolIHT <- reactive({
+    
+    filedata() %>%
+      as_tibble() %>%
+      ## Remove duplicates
+      distinct(student_studentNumber, .keep_all = T) %>%
+      # fix the kindergarten output from campus to match what IHT needs
+      mutate(student_grade = replace(student_grade, student_grade == "KF", "K")) %>%
+      unite("IHTClassName", function_IHTClassName, function_Schoolyear) %>%
+      # Select and rename variables
+      select(c(
+        "grade level" = student_grade,
+        "section" = IHTClassName,
+        "student id" = student_studentNumber,
+        "last name*" = student_lastName,
+        "first name" = student_firstName,
+        "secondary email" = contacts_email,
+        "gender*" = student_gender,
+        "birthdate" = student_birthdate
+      )) %>%
+      # add the blank columns
+      add_column("email" = NA, .before = "secondary email") %>%
+      add_column(height = NA, weight = NA, .before = "birthdate") %>%
+      add_column(rhr = NA, max = NA, .after = "birthdate") -> ihtJH
+    return(ihtJH)
+    
+  })
+  
+  #### IHT PREP HIGH SCHOOL LEVEL ####
+  HighSChoolIHT <- reactive({
+    filedata() %>%
+      as_tibble() %>%
+      ## Remove duplicates
+      distinct(student_studentNumber, .keep_all = T) %>%
+      # fix the kindergarten output from campus to match what IHT needs
+      mutate(student_grade = replace(student_grade, student_grade == "KF", "K")) %>%
+      # filter out the teacher
+      filter(str_detect(function_IHTClassName, pattern = input$periodDropdown)) %>%
+      # Select and rename variables
+      select(c(
+        "grade level" = student_grade,
+        "section" = function_IHTClassName,
+        "student id" = student_studentNumber,
+        "last name*" = student_lastName,
+        "first name" = student_firstName,
+        "secondary email" = contacts_email,
+        "gender*" = student_gender,
+        "birthdate" = student_birthdate
+      )) %>%
+      # add the blank columns
+      add_column("email" = NA, .before = "secondary email") %>%
+      add_column(height = NA, weight = NA, .before = "birthdate") %>%
+      add_column(rhr = NA, max = NA, .after = "birthdate") -> ihtHS
+    return(ihtHS)
+  })
 
   ## Render the prepped data
   output$prepped <- renderTable({
@@ -439,10 +457,6 @@ server <- function(input, output) {
     if (FileCorrect() == F) {
       return(NULL)
     }
-
-
-
-
 
     if (input$rosterType == "IHT") {
       ## This gets the list of periods
