@@ -149,66 +149,13 @@ server <- function(input, output) {
 
     else if (input$rosterType == "HMH (Gov/Hist)") {
       if (input$hmhFileDropdown == "Class") {
-        filedata() %>%
-          distinct(courseSection_courseID, courseSection_sectionNumber, .keep_all = T) %>%
-          mutate(courseSection_courseName, COURSESUBJECT = ifelse(courseSection_courseName == "American Government", "Government", "History")) %>%
-          mutate(courseSection_courseName, GRADE = ifelse(courseSection_courseName == "American Government", "11", "9")) %>%
-          mutate("CLASSLOCALID" = paste(cal_endYear, courseSection_courseID, sectionSchedule_periodStart, sep = "_")) %>%
-          mutate("CLASSNAME" = paste(cal_endYear, courseSection_courseName, "Sec", courseSection_sectionNumber, sep = " ")) %>%
-          add_column("TERMID" = NA, "ORGANIZATIONID" = 250932, "CLASSDESCRIPTION" = NA, "ORGANIZATIONTYPEID" = NA, HMHAPPLICATIONS = "ED") %>%
-          select(c(
-            "SCHOOLYEAR" = cal_endYear,
-            CLASSLOCALID,
-            "COURSEID" = courseSection_courseID,
-            "COURSENAME" = courseSection_courseName,
-            COURSESUBJECT,
-            CLASSNAME,
-            CLASSDESCRIPTION,
-            "CLASSPERIOD" = sectionSchedule_periodStart,
-            ORGANIZATIONTYPEID,
-            ORGANIZATIONID,
-            GRADE,
-            TERMID,
-            HMHAPPLICATIONS
-          )) -> CLASS
-        return(CLASS)
+        return(HMHClass())
       }
       else if (input$hmhFileDropdown == "Users") {
-        filedata() %>%
-          distinct(student_studentNumber, .keep_all = T) %>%
-          mutate(student_studentNumber, "ROLE" = ifelse(student_studentNumber >= 500000, "T", "S")) %>%
-          mutate("USERNAME" = gsub(" ", "", str_remove_all(tolower(paste0(student_firstName, student_lastName)), "[~!@#$%^&*(){}_+:<>?,./;'-]"))) %>%
-          add_column("MIDDLENAME" = NA, "ORGANIZATIONTYPEID" = "MDR", "ORGANIZATIONID" = 250932, "PRIMARYEMAIL" = NA, HMHAPPLICATIONS = "ED") %>%
-          select(
-            "SCHOOLYEAR" = cal_endYear,
-            ROLE,
-            "LASID" = student_studentNumber,
-            "SASID" = student_stateID,
-            "FIRSTNAME" = student_firstName,
-            MIDDLENAME,
-            "LASTNAME" = student_lastName,
-            "GRADE" = student_grade,
-            USERNAME,
-            "PASSWORD" = student_studentNumber,
-            ORGANIZATIONTYPEID,
-            ORGANIZATIONID,
-            PRIMARYEMAIL,
-            HMHAPPLICATIONS
-          ) -> USERS
-        return(USERS)
+        return(HMHUsers())
       }
       else if (input$hmhFileDropdown == "Class Assignments") {
-        filePrep() %>%
-          mutate("CLASSLOCALID" = paste(cal_endYear, courseSection_courseID, sectionSchedule_periodStart, sep = "_")) %>%
-          mutate(student_studentNumber, "ROLE" = ifelse(student_studentNumber >= 500000, "T", "S")) %>%
-          mutate(student_studentNumber, "OSITION" = ifelse(student_studentNumber >= 500000, "L", NA)) %>%
-          select(
-            "SCHOOLYEAR" = cal_endYear,
-            CLASSLOCALID,
-            ROLE,
-            POSITION
-          ) -> CLASSASSIGNMENTS
-        return(CLASSASSIGNMENTS)
+        return(HMHClassAssignments())
       }
       else {
         return(NULL)
@@ -366,6 +313,75 @@ server <- function(input, output) {
       add_column(height = NA, weight = NA, .before = "birthdate") %>%
       add_column(rhr = NA, max = NA, .after = "birthdate") -> ihtHS
     return(ihtHS)
+  })
+  
+  #### HMH Class file ####
+  HMHClass <- reactive({
+    filedata() %>%
+      distinct(courseSection_courseID, courseSection_sectionNumber, .keep_all = T) %>%
+      mutate(courseSection_courseName, COURSESUBJECT = ifelse(courseSection_courseName == "American Government", "Government", "History")) %>%
+      mutate(courseSection_courseName, GRADE = ifelse(courseSection_courseName == "American Government", "11", "9")) %>%
+      mutate("CLASSLOCALID" = paste(cal_endYear, courseSection_courseID, sectionSchedule_periodStart, sep = "_")) %>%
+      mutate("CLASSNAME" = paste(cal_endYear, courseSection_courseName, "Sec", courseSection_sectionNumber, sep = " ")) %>%
+      add_column("TERMID" = NA, "ORGANIZATIONID" = 250932, "CLASSDESCRIPTION" = NA, "ORGANIZATIONTYPEID" = NA, HMHAPPLICATIONS = "ED") %>%
+      select(c(
+        "SCHOOLYEAR" = cal_endYear,
+        CLASSLOCALID,
+        "COURSEID" = courseSection_courseID,
+        "COURSENAME" = courseSection_courseName,
+        COURSESUBJECT,
+        CLASSNAME,
+        CLASSDESCRIPTION,
+        "CLASSPERIOD" = sectionSchedule_periodStart,
+        ORGANIZATIONTYPEID,
+        ORGANIZATIONID,
+        GRADE,
+        TERMID,
+        HMHAPPLICATIONS
+      )) -> CLASS
+    return(CLASS)
+  })
+  
+  #### HMH Users file ####
+  HMHUsers <- reactive({
+    filedata() %>%
+      distinct(student_studentNumber, .keep_all = T) %>%
+      mutate(student_studentNumber, "ROLE" = ifelse(student_studentNumber >= 500000, "T", "S")) %>%
+      mutate("USERNAME" = gsub(" ", "", str_remove_all(tolower(paste0(student_firstName, student_lastName)), "[~!@#$%^&*(){}_+:<>?,./;'-]"))) %>%
+      add_column("MIDDLENAME" = NA, "ORGANIZATIONTYPEID" = "MDR", "ORGANIZATIONID" = 250932, "PRIMARYEMAIL" = NA, HMHAPPLICATIONS = "ED") %>%
+      select(
+        "SCHOOLYEAR" = cal_endYear,
+        ROLE,
+        "LASID" = student_studentNumber,
+        "SASID" = student_stateID,
+        "FIRSTNAME" = student_firstName,
+        MIDDLENAME,
+        "LASTNAME" = student_lastName,
+        "GRADE" = student_grade,
+        USERNAME,
+        "PASSWORD" = student_studentNumber,
+        ORGANIZATIONTYPEID,
+        ORGANIZATIONID,
+        PRIMARYEMAIL,
+        HMHAPPLICATIONS
+      ) -> USERS
+    return(USERS)
+  })
+  
+  
+  #### HMH Class Assignments file ####
+  HMHClassAssignments <- reactive({
+    filePrep() %>%
+      mutate("CLASSLOCALID" = paste(cal_endYear, courseSection_courseID, sectionSchedule_periodStart, sep = "_")) %>%
+      mutate(student_studentNumber, "ROLE" = ifelse(student_studentNumber >= 500000, "T", "S")) %>%
+      mutate(student_studentNumber, "OSITION" = ifelse(student_studentNumber >= 500000, "L", NA)) %>%
+      select(
+        "SCHOOLYEAR" = cal_endYear,
+        CLASSLOCALID,
+        ROLE,
+        POSITION
+      ) -> CLASSASSIGNMENTS
+    return(CLASSASSIGNMENTS)
   })
 
   ## Render the prepped data
