@@ -37,13 +37,14 @@ ui <- navbarPage(
     sidebarLayout(
       sidebarPanel(
         fileInput("file1", "Choose CSV File",
-          multiple = TRUE,
+          multiple = FALSE,
           accept = c(
             "text/csv",
             "text/comma-separated-values,text/plain",
             ".csv"
           )
         ),
+        actionButton("append", "Show Preperations"),
         selectInput("rosterType", "Choose a roster to prep",
           choices = c("None",  "HMH (Gov/Hist)", "IHT", "PLTW (Elementary)", "Waterford")
         ),
@@ -88,22 +89,6 @@ ui <- navbarPage(
       downloadButton("downloadData", "Download"),
       tableOutput("prepped")
     )
-  ),
-  tabPanel(
-    "PLTW",
-    value = 'PLTW',
-    # condition = "output.readyPLTW == true",
-    titlePanel("PLTW Rosters"),
-    sidebarLayout(
-      sidebarPanel(
-        uiOutput("schoolSelectElemPLTW")
-      ),
-      
-      ## this shows the uploaded data set
-      mainPanel(
-        
-      )
-    )
   )
 )
 
@@ -111,6 +96,7 @@ ui <- navbarPage(
 
 ###### SERVER FUNCTIONS ######
 server <- function(input, output, session) {
+  
  
   
   #### Data ####
@@ -573,6 +559,31 @@ server <- function(input, output, session) {
       return(NULL)
     }
   })
+  
+  observeEvent(input$append, {
+    id <- paste0("Dropdown", input$append, "a")
+    
+    
+    if(readyPLTW2()==T){
+    appendTab(inputId = "tabs",
+              tabPanel(
+                "PLTW",
+                # condition = "output.readyPLTW == true",
+                titlePanel("PLTW Rosters"),
+                sidebarLayout(
+                  sidebarPanel(
+                    uiOutput("schoolSelectElemPLTW")
+                  ),
+                  
+                  ## this shows the uploaded data set
+                  mainPanel(
+                    
+                  )
+                )
+              )
+    )}
+  })
+  
 
   output$filePLTWPossible <- reactive({
     if (FileReady() == F) {
@@ -584,9 +595,11 @@ server <- function(input, output, session) {
     
   })
   
-  observeEvent(input$file1, {
-    if(readyPLTW2==T){
-      showTab(inputId = "tabs", target = "PLTW")
+  eventReactive(input$file1, {
+    if(readyPLTW2()==T){
+      insertTab(inputId = "tabs", 
+
+              )
     }
     else{
       hideTab(inputId = "tabs", target = "PLTW")
@@ -730,7 +743,7 @@ server <- function(input, output, session) {
     test <- check %in% names(FileData())
     
     if (all(test) == T) {
-      message("ready to go")
+
       return(TRUE)
     }
     else {
