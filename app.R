@@ -400,6 +400,45 @@ server <- function(input, output) {
     return(waterford)
   })
   
+  
+  ##### PLTW #####
+  
+  #### PLTW Elementary Classes ####
+  ElementaryPLTW <- reactive({
+    
+    elemPLTW <- FileData()
+    elemPLTW$schoolName <- substr(elemPLTW$student_calendarName, 7, length(elemPLTW$student_calendarName))
+    
+    
+    start_date <- input$startDatePLTW
+    end_date <-  input$endDatePLTW
+    
+    
+    elemPLTW %>%
+      mutate(courseCode= case_when(
+        student_grade == "KF" ~ "ELE_K",
+        student_grade == "01" ~ "ELE_1",
+        student_grade == "02" ~ "ELE_2",
+        student_grade == "03" ~ "ELE_3",
+        student_grade == "04" ~ "ELE_4",
+        student_grade == "05" ~ "ELE_5",
+        TRUE ~ "Error"), 
+        startDate=start_date, 
+        endDate=end_date) %>%
+      filter(courseCode!="Error")%>%
+      filter(schoolName==input$schoolNamePLTW) %>%
+      select("TEACHER EMAIL"=courseSection_TeacherEmail,
+             "COURSE CODE"= courseCode, 
+             "COURSE BEGIN DATE"= startDate, 
+             "COURSE END DATE"= endDate, 
+             "STUDENT FIRST" = student_legalFirstName, 
+             "STUDENT LAST" = student_legalLastName,
+             "STUDENT GRADE" = student_grade, 
+             "STUDENT STATE ID NUMBER" = student_stateID, 
+             "GENDER"= student_gender,
+             "DOB" = student_birthdate
+      )
+  })
  
 
   ## Render the prepped data
