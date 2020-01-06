@@ -99,9 +99,9 @@ server <- function(input, output) {
   #### Data ####
 
   ## Extract the CSV
-  filedata <- reactive({
+  FileData <- reactive({
     infile <- input$file1
-    if (fileReady() == F) {
+    if (FileReady() == F) {
       return(NULL)
     }
 
@@ -115,7 +115,7 @@ server <- function(input, output) {
 
   ## Show Uploaded Data
   output$contents <- renderTable({
-    df <- filedata()
+    df <- FileData()
 
     if (input$disp == "head") {
       return(head(df))
@@ -125,9 +125,9 @@ server <- function(input, output) {
     }
   })
 
-  ## PREP The FILE
-  filePrep <- reactive({
-    if (fileReady() == F) {
+  ## What Kind of file is being Prepped?
+  FilePrep <- reactive({
+    if (FileReady() == F) {
       return(NULL)
     }
 
@@ -170,10 +170,15 @@ server <- function(input, output) {
     }
   })
 
-
+  
+  ###### PREPPING THE FILES ######
+  
+  
+  ##### IHT  #####
+  
   #### IHT PREP ELEMENTARY LEVEL ####
   ElementaryIHT <- reactive({
-    filedata() %>%
+    FileData() %>%
       as_tibble() %>%
       ## Remove duplicates
       distinct(student_studentNumber, .keep_all = T) %>%
@@ -207,7 +212,7 @@ server <- function(input, output) {
 
   #### IHT PREP JR. HIGH SCHOOL LEVEL ####
   JrHighSchoolIHT <- reactive({
-    filedata() %>%
+    FileData() %>%
       as_tibble() %>%
       ## Remove duplicates
       distinct(student_studentNumber, .keep_all = T) %>%
@@ -234,7 +239,7 @@ server <- function(input, output) {
 
   #### IHT PREP HIGH SCHOOL LEVEL ####
   HighSChoolIHT <- reactive({
-    filedata() %>%
+    FileData() %>%
       as_tibble() %>%
       ## Remove duplicates
       distinct(student_studentNumber, .keep_all = T) %>%
@@ -260,9 +265,14 @@ server <- function(input, output) {
     return(ihtHS)
   })
 
+  
+  
+  
+  ##### HMH ####
+  
   #### HMH Class file ####
   HMHClass <- reactive({
-    filedata() %>%
+    FileData() %>%
       distinct(courseSection_courseID, courseSection_sectionNumber, .keep_all = T) %>%
       mutate(courseSection_courseName, COURSESUBJECT = ifelse(courseSection_courseName == "American Government", "Government", "History")) %>%
       mutate(courseSection_courseName, GRADE = ifelse(courseSection_courseName == "American Government", "11", "9")) %>%
@@ -289,7 +299,7 @@ server <- function(input, output) {
 
   #### HMH Users file ####
   HMHUsers <- reactive({
-    filedata() %>%
+    FileData() %>%
       distinct(student_studentNumber, .keep_all = T) %>%
       mutate(student_studentNumber, "ROLE" = ifelse(student_studentNumber >= 500000, "T", "S")) %>%
       mutate("USERNAME" = gsub(" ", "", str_remove_all(tolower(paste0(student_firstName, student_lastName)), "[~!@#$%^&*(){}_+:<>?,./;'-]"))) %>%
@@ -315,7 +325,7 @@ server <- function(input, output) {
 
   #### HMH Class Assignments file ####
   HMHClassAssignments <- reactive({
-    filePrep() %>%
+    FilePrep() %>%
       mutate("CLASSLOCALID" = paste(cal_endYear, courseSection_courseID, sectionSchedule_periodStart, sep = "_")) %>%
       mutate(student_studentNumber, "ROLE" = ifelse(student_studentNumber >= 500000, "T", "S")) %>%
       mutate(student_studentNumber, "OSITION" = ifelse(student_studentNumber >= 500000, "L", NA)) %>%
@@ -327,11 +337,14 @@ server <- function(input, output) {
       ) -> CLASSASSIGNMENTS
     return(CLASSASSIGNMENTS)
   })
-
+  
+  
+  
+  ##### Waterford #####
 
   #### Waterford Prepped File ####
   WaterfordPrep <- reactive({
-    df <- filedata()
+    df <- FileData()
 
     df %>%
       distinct(student_studentNumber, .keep_all = T) %>%
@@ -386,10 +399,12 @@ server <- function(input, output) {
 
     return(waterford)
   })
+  
+ 
 
   ## Render the prepped data
   output$prepped <- renderTable({
-    df <- filePrep()
+    df <- FilePrep()
 
     return(df)
   })
@@ -401,7 +416,7 @@ server <- function(input, output) {
       paste(input$rosterType, ".csv", sep = "")
     },
     content = function(file) {
-      write.csv(filePrep(), file, row.names = FALSE, na = "")
+      write.csv(FilePrep(), file, row.names = FALSE, na = "")
     }
   )
 
@@ -409,7 +424,7 @@ server <- function(input, output) {
 
   ## select the level of institution for IHT
   output$schoolSelectIHT <- renderUI({
-    if (fileReady() == F) {
+    if (FileReady() == F) {
       return(NULL)
     }
     if (FileCorrect() == F) {
@@ -432,7 +447,7 @@ server <- function(input, output) {
 
   ## select the teacher for elementary teachers in IHT
   output$teacherSelect <- renderUI({
-    if (fileReady() == F) {
+    if (FileReady() == F) {
       return(NULL)
     }
     if (FileCorrect() == F) {
@@ -445,7 +460,7 @@ server <- function(input, output) {
 
 
     if (input$rosterType == "IHT") {
-      df <- filedata() %>%
+      df <- FileData() %>%
         as_tibble() %>%
         distinct(student_studentNumber, .keep_all = T) %>%
         mutate(student_grade = replace(student_grade, student_grade == "KF", "K")) %>%
@@ -470,7 +485,7 @@ server <- function(input, output) {
 
   ## Period select for high School IHT
   output$periodSelect <- renderUI({
-    if (fileReady() == F) {
+    if (FileReady() == F) {
       return(NULL)
     }
     if (FileCorrect() == F) {
@@ -479,7 +494,7 @@ server <- function(input, output) {
 
     if (input$rosterType == "IHT") {
       ## This gets the list of periods
-      df <- filedata() %>%
+      df <- FileData() %>%
         as_tibble() %>%
         distinct(student_studentNumber, .keep_all = T) %>%
         mutate(student_grade = replace(student_grade, student_grade == "KF", "K")) %>%
@@ -504,7 +519,7 @@ server <- function(input, output) {
   })
 
   output$warningTitle <- renderUI({
-    if (fileReady() == F) {
+    if (FileReady() == F) {
       return(NULL)
     }
     if (input$rosterType == "None") {
@@ -522,7 +537,7 @@ server <- function(input, output) {
 
   ## renders the title for output page
   output$exportTitle <- renderUI({
-    if (fileReady() == F) {
+    if (FileReady() == F) {
       return(NULL)
     }
     if (is.null(df)) {
@@ -547,7 +562,7 @@ server <- function(input, output) {
 
   ## File options for HMH
   output$hmhFileOptions <- renderUI({
-    if (fileReady() == F) {
+    if (FileReady() == F) {
       return(NULL)
     }
     if (FileCorrect() == F) {
@@ -566,7 +581,7 @@ server <- function(input, output) {
   #### ERROR CHECKING ####
 
   ## is there a file ready and waiting?
-  fileReady <- reactive({
+  FileReady <- reactive({
     infile <- input$file1
     if (is.null(infile)) {
       # User has not uploaded a file yet
@@ -576,7 +591,7 @@ server <- function(input, output) {
   })
 
   FileCorrect <- reactive({
-    if (fileReady() == F) {
+    if (FileReady() == F) {
       return(NULL)
     }
 
@@ -600,7 +615,7 @@ server <- function(input, output) {
       )
 
 
-      test <- check %in% names(filedata())
+      test <- check %in% names(FileData())
 
       if (all(test) == T) {
         return(T)
@@ -627,7 +642,7 @@ server <- function(input, output) {
         "cal_endYear"
       )
 
-      test <- check %in% names(filedata())
+      test <- check %in% names(FileData())
 
       if (all(test) == T) {
         return(T)
@@ -649,7 +664,7 @@ server <- function(input, output) {
         "student_calendarName",
         "student_homeroomTeacher"
       )
-      test <- check %in% names(filedata())
+      test <- check %in% names(FileData())
 
       if (all(test) == T) {
         return(T)
