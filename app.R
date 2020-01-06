@@ -9,7 +9,7 @@ library(shinythemes)
 
 ###### UI Layout ######
 ui <- navbarPage(
-  "Rostering Preperation",
+  "Rostering Preperation", id="tabs",
 
   #### HOME PAGE #####
   tabPanel(
@@ -32,6 +32,7 @@ ui <- navbarPage(
     "Upload",
     titlePanel("Uploading Files"),
     uiOutput("warningTitle"),
+    verbatimTextOutput("readyPLTW"),
     uiOutput("variableType"),
     sidebarLayout(
       sidebarPanel(
@@ -87,15 +88,31 @@ ui <- navbarPage(
       downloadButton("downloadData", "Download"),
       tableOutput("prepped")
     )
+  ),
+  tabPanel(
+    "PLTW",
+    value = 'PLTW',
+    # condition = "output.readyPLTW == true",
+    titlePanel("PLTW Rosters"),
+    sidebarLayout(
+      sidebarPanel(
+        uiOutput("schoolSelectElemPLTW")
+      ),
+      
+      ## this shows the uploaded data set
+      mainPanel(
+        
+      )
+    )
   )
 )
 
 
 
-
 ###### SERVER FUNCTIONS ######
-server <- function(input, output) {
-
+server <- function(input, output, session) {
+ 
+  
   #### Data ####
 
   ## Extract the CSV
@@ -557,6 +574,25 @@ server <- function(input, output) {
     }
   })
 
+  output$filePLTWPossible <- reactive({
+    if (FileReady() == F) {
+      return(NULL)
+    }
+    
+    titlePanel(readyPLTW2())
+  
+    
+  })
+  
+  observeEvent(input$file1, {
+    if(readyPLTW2==T){
+      showTab(inputId = "tabs", target = "PLTW")
+    }
+    else{
+      hideTab(inputId = "tabs", target = "PLTW")
+    }
+  })
+  
   output$warningTitle <- renderUI({
     if (FileReady() == F) {
       return(NULL)
@@ -616,7 +652,7 @@ server <- function(input, output) {
   })
 
   ## select the level of institution for PLTW
-  output$schoolSelectPLTW <- renderUI({
+  output$schoolSelectElemPLTW <- renderUI({
     if (FileReady() == F) {
       return(NULL)
     }
@@ -640,7 +676,70 @@ server <- function(input, output) {
       return(NULL)
     }
   })
+  
 
+  
+  
+  ## does the file have all field for PLTW
+  output$readyPLTW <- reactive({
+    if (FileReady() == F) {
+      return(FALSE)
+    }
+    
+    check <- c(
+      "student_grade", #
+      "courseSection_TeacherEmail", #
+      "student_calendarName", #
+      "student_firstName", #
+      "student_lastName", #
+      "student_grade", #
+      "student_stateID", #
+      "student_gender", #
+      "student_birthdate"
+    )
+      
+      test <- check %in% names(FileData())
+      
+      if (all(test) == T) {
+        return(TRUE)
+      }
+      else {
+        return(FALSE)
+      }
+    
+  })
+  
+  readyPLTW2 <- reactive({
+    if (FileReady() == F) {
+      return(NULL)
+    }
+    
+    check <- c(
+      "student_grade", #
+      "courseSection_TeacherEmail", #
+      "student_calendarName", #
+      "student_firstName", #
+      "student_lastName", #
+      "student_grade", #
+      "student_stateID", #
+      "student_gender", #
+      "student_birthdate"
+    )
+    
+    
+    test <- check %in% names(FileData())
+    
+    if (all(test) == T) {
+      message("ready to go")
+      return(TRUE)
+    }
+    else {
+      message("not ready to go")
+      
+      return(FALSE)
+    }
+    
+  })
 
   #### ERROR CHECKING ####
 
@@ -741,6 +840,9 @@ server <- function(input, output) {
       return(F)
     }
   })
+  
+  outputOptions(output, "readyPLTW", suspendWhenHidden = FALSE)
+  
 }
 
 # Run the application
