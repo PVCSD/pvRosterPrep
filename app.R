@@ -44,7 +44,7 @@ ui <- navbarPage(
           )
         ),
         selectInput("rosterType", "Choose a roster to prep",
-          choices = c("None", "IHT", "HMH (Gov/Hist)", "Waterford")
+          choices = c("None",  "HMH (Gov/Hist)", "IHT", "PLTW (Elementary)", "Waterford")
         ),
         uiOutput("schoolSelectIHT"),
         uiOutput("teacherSelect"),
@@ -615,6 +615,31 @@ server <- function(input, output) {
     }
   })
 
+  ## select the level of institution for PLTW
+  output$schoolSelectPLTW <- renderUI({
+    if (FileReady() == F) {
+      return(NULL)
+    }
+    if (FileCorrect() == F) {
+      return(NULL)
+    }
+    
+    
+    if (input$rosterType == "PLTW (Elementary)") {
+      if (is.null(df)) {
+        return(NULL)
+      }
+      elemPLTW <- FileData()
+      
+      elemPLTW$schoolName <- substr(elemPLTW$student_calendarName, 7, length(elemPLTW$student_calendarName))
+      
+      items <- unique(elemPLTW$schoolName)
+      selectInput("schoolNamePLTW", "School", items)
+    }
+    else {
+      return(NULL)
+    }
+  })
 
 
   #### ERROR CHECKING ####
