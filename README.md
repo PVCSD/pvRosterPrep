@@ -5,10 +5,10 @@ A Shiny App to help with rostering students. Data is manually pulled from infini
 
 
 ## Currently Supporting
-Waterford, IHT (elementary and secondary), and HMH
+Waterford, IHT (elementary and secondary), HMH, and PLTW
 
 
 ## To Add
-* PLTW, 
+
 * Pearson Textbooks
 * McGraw
