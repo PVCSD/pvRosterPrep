@@ -42,6 +42,7 @@ ui <- navbarPage(
             ".csv"
           )
         ),
+        shinyjs::useShinyjs(),
         actionButton("append", "Show Preperations"),
         selectInput("rosterType", "Choose a roster to prep",
           choices = c("None", "HMH (Gov/Hist)", "IHT", "PLTW (Elementary)", "Waterford")
