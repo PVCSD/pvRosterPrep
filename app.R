@@ -586,6 +586,24 @@ server <- function(input, output, session) {
         )
       )
     }
+    if (readyIHT()==T){
+      appendTab(
+        inputId = "tabs",
+        tabPanel(
+          "IHT",
+          # condition = "output.readyPLTW == true",
+          titlePanel("IHT Rosters"),
+          sidebarLayout(
+            sidebarPanel(
+              uiOutput("schoolSelectElemPLTW")
+            ),
+            
+            ## this shows the uploaded data set
+            mainPanel()
+          )
+        )
+      )
+    }
   })
 
 
@@ -745,8 +763,42 @@ server <- function(input, output, session) {
       return(TRUE)
     }
     else {
-      message("not ready to go")
+      message("PLTW not ready to go")
 
+      return(FALSE)
+    }
+  })
+  
+  readyIHT <- reactive({
+    if (FileReady() == F) {
+      return(NULL)
+    }
+    
+    check <- c(
+      "student_grade", #
+      "student_homeroomTeacher", #
+      "student_studentNumber", #
+      "student_lastName", #
+      "student_firstName", #
+      "student_gender", #
+      "student_birthdate", #
+      "student_calendarName", #
+      "courseSection_teacherDisplay", #
+      "roster_endDate",
+      "sectionSchedule_periodStart", #
+      "sectionSchedule_scheduleStart", #
+      "contacts_email", #
+      "function_IHTClassName" #
+    )
+    
+    
+    test <- check %in% names(FileData())
+    
+    if (all(test) == TRUE) {
+      return(TRUE)
+    }
+    else {
+      message("IHT not ready to go")
       return(FALSE)
     }
   })
@@ -770,32 +822,7 @@ server <- function(input, output, session) {
 
 
     if (input$rosterType == "IHT") {
-      check <- c(
-        "student_grade", #
-        "student_homeroomTeacher", #
-        "student_studentNumber", #
-        "student_lastName", #
-        "student_firstName", #
-        "student_gender", #
-        "student_birthdate", #
-        "student_calendarName", #
-        "courseSection_teacherDisplay", #
-        "roster_endDate",
-        "sectionSchedule_periodStart", #
-        "sectionSchedule_scheduleStart", #
-        "contacts_email", #
-        "function_IHTClassName" #
-      )
-
-
-      test <- check %in% names(FileData())
-
-      if (all(test) == T) {
-        return(T)
-      }
-      else {
-        return(F)
-      }
+      
     }
     else if (input$rosterType == "HMH (Gov/Hist)") {
       check <- c(
