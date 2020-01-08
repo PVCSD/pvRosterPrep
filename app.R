@@ -586,13 +586,31 @@ server <- function(input, output, session) {
         )
       )
     }
-    if (readyIHT()==T){
+    if (ReadyIHT() == T) {
       appendTab(
         inputId = "tabs",
         tabPanel(
           "IHT",
           # condition = "output.readyPLTW == true",
           titlePanel("IHT Rosters"),
+          sidebarLayout(
+            sidebarPanel(
+              uiOutput("schoolSelectElemPLTW")
+            ),
+
+            ## this shows the uploaded data set
+            mainPanel()
+          )
+        )
+      )
+    }
+    if (ReadyHMH() == T) {
+      appendTab(
+        inputId = "tabs",
+        tabPanel(
+          "HMH",
+          # condition = "output.readyPLTW == true",
+          titlePanel("HMH Rosters"),
           sidebarLayout(
             sidebarPanel(
               uiOutput("schoolSelectElemPLTW")
@@ -768,12 +786,12 @@ server <- function(input, output, session) {
       return(FALSE)
     }
   })
-  
-  readyIHT <- reactive({
+
+  ReadyIHT <- reactive({
     if (FileReady() == F) {
       return(NULL)
     }
-    
+
     check <- c(
       "student_grade", #
       "student_homeroomTeacher", #
@@ -790,10 +808,10 @@ server <- function(input, output, session) {
       "contacts_email", #
       "function_IHTClassName" #
     )
-    
-    
+
+
     test <- check %in% names(FileData())
-    
+
     if (all(test) == TRUE) {
       return(TRUE)
     }
@@ -801,6 +819,40 @@ server <- function(input, output, session) {
       message("IHT not ready to go")
       return(FALSE)
     }
+  })
+  
+  ReadyHMH <- reactive({
+    if (FileReady() == F) {
+      return(NULL)
+    }
+    
+    check <- c(
+      "student_firstName",
+      "student_lastName",
+      "student_grade",
+      "student_stateID",
+      "courseSection_courseID",
+      "student_endDate",
+      "courseSection_courseNumber",
+      "roster_endDate",
+      "courseSection_teacherDisplay",
+      "student_studentNumber",
+      "courseSection_sectionNumber",
+      "courseSection_courseName",
+      "sectionSchedule_periodStart",
+      "cal_endYear"
+    )
+    
+    test <- check %in% names(FileData())
+    
+    if (all(test) == T) {
+      return(TRUE)
+    }
+    else {
+      message("HMH not ready to go")
+      return(FALSE)
+    }
+    
   })
 
   #### ERROR CHECKING ####
@@ -822,34 +874,10 @@ server <- function(input, output, session) {
 
 
     if (input$rosterType == "IHT") {
-      
+      return(ReadyIHT())
     }
     else if (input$rosterType == "HMH (Gov/Hist)") {
-      check <- c(
-        "student_firstName",
-        "student_lastName",
-        "student_grade",
-        "student_stateID",
-        "courseSection_courseID",
-        "student_endDate",
-        "courseSection_courseNumber",
-        "roster_endDate",
-        "courseSection_teacherDisplay",
-        "student_studentNumber",
-        "courseSection_sectionNumber",
-        "courseSection_courseName",
-        "sectionSchedule_periodStart",
-        "cal_endYear"
-      )
-
-      test <- check %in% names(FileData())
-
-      if (all(test) == T) {
-        return(T)
-      }
-      else {
-        return(F)
-      }
+      return(ReadyHMH())
     }
     else if (input$rosterType == "Waterford") {
       check <- c(
