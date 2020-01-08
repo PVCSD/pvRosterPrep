@@ -32,9 +32,6 @@ ui <- navbarPage(
   tabPanel(
     "Upload",
     titlePanel("Uploading Files"),
-    uiOutput("warningTitle"),
-    verbatimTextOutput("readyPLTW"),
-    uiOutput("variableType"),
     sidebarLayout(
       sidebarPanel(
         fileInput("file1", "Choose CSV File",
@@ -567,43 +564,6 @@ server <- function(input, output, session) {
   observeEvent(input$append, {
     id <- paste0("Dropdown", input$append, "a")
 
-
-    if (readyPLTW2() == T) {
-      appendTab(
-        inputId = "tabs",
-        tabPanel(
-          "PLTW",
-          # condition = "output.readyPLTW == true",
-          titlePanel("PLTW Rosters"),
-          sidebarLayout(
-            sidebarPanel(
-              uiOutput("schoolSelectElemPLTW")
-            ),
-
-            ## this shows the uploaded data set
-            mainPanel()
-          )
-        )
-      )
-    }
-    if (ReadyIHT() == T) {
-      appendTab(
-        inputId = "tabs",
-        tabPanel(
-          "IHT",
-          # condition = "output.readyPLTW == true",
-          titlePanel("IHT Rosters"),
-          sidebarLayout(
-            sidebarPanel(
-              uiOutput("schoolSelectElemPLTW")
-            ),
-
-            ## this shows the uploaded data set
-            mainPanel()
-          )
-        )
-      )
-    }
     if (ReadyHMH() == T) {
       appendTab(
         inputId = "tabs",
@@ -622,6 +582,62 @@ server <- function(input, output, session) {
         )
       )
     }
+    if (ReadyIHT() == T) {
+      appendTab(
+        inputId = "tabs",
+        tabPanel(
+          "IHT",
+          # condition = "output.readyPLTW == true",
+          titlePanel("IHT Rosters"),
+          sidebarLayout(
+            sidebarPanel(
+              uiOutput("schoolSelectElemPLTW")
+            ),
+            
+            ## this shows the uploaded data set
+            mainPanel()
+          )
+        )
+      )
+    }
+    if (readyPLTW2() == T) {
+      appendTab(
+        inputId = "tabs",
+        tabPanel(
+          "PLTW",
+          # condition = "output.readyPLTW == true",
+          titlePanel("PLTW Rosters"),
+          sidebarLayout(
+            sidebarPanel(
+              uiOutput("schoolSelectElemPLTW")
+            ),
+            
+            ## this shows the uploaded data set
+            mainPanel()
+          )
+        )
+      )
+    }
+    if (ReadyWaterford() == T) {
+      appendTab(
+        inputId = "tabs",
+        tabPanel(
+          "Waterford",
+          # condition = "output.readyPLTW == true",
+          titlePanel("HMH Rosters"),
+          sidebarLayout(
+            sidebarPanel(
+              uiOutput("schoolSelectElemPLTW")
+            ),
+            
+            ## this shows the uploaded data set
+            mainPanel()
+          )
+        )
+      )
+    }
+    
+    shinyjs::hide("append")
   })
 
 
@@ -854,6 +870,34 @@ server <- function(input, output, session) {
     }
     
   })
+  
+  ReadyWaterford <- reactive({
+    if (FileReady() == F) {
+      return(NULL)
+    }
+    
+    check <- c(
+      "student_firstName",
+      "student_middleName",
+      "student_lastName",
+      "student_alias",
+      "student_studentNumber",
+      "student_grade",
+      "student_gender",
+      "student_birthdate",
+      "student_calendarName",
+      "student_homeroomTeacher"
+    )
+    test <- check %in% names(FileData())
+    
+    if (all(test) == T) {
+      return(TRUE)
+    }
+    else {
+      message("Waterford Not Ready To Go")
+      return(FALSE)
+    }
+  })
 
   #### ERROR CHECKING ####
 
@@ -880,26 +924,10 @@ server <- function(input, output, session) {
       return(ReadyHMH())
     }
     else if (input$rosterType == "Waterford") {
-      check <- c(
-        "student_firstName",
-        "student_middleName",
-        "student_lastName",
-        "student_alias",
-        "student_studentNumber",
-        "student_grade",
-        "student_gender",
-        "student_birthdate",
-        "student_calendarName",
-        "student_homeroomTeacher"
-      )
-      test <- check %in% names(FileData())
-
-      if (all(test) == T) {
-        return(T)
-      }
-      else {
-        return(F)
-      }
+      return(ReadyWaterford())
+    }
+    else if (input$rosterType == "PLTW (Elementary)"){
+      return(readyPLTW2())
     }
     else {
       return(F)
