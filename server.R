@@ -7,118 +7,33 @@ library(stringr)
 library(shinythemes)
 
 
-###### UI Layout ######
-ui <- navbarPage(
-  "Rostering Preperation",
-  id = "tabs",
-
-  #### HOME PAGE #####
-  tabPanel(
-    "Home",
-    h1("About this App"),
-    fluidRow(
-      column(width = 3, img(src = "spartanLogo.png", align = "center")),
-      column(
-        width = 9,
-        p("This App is designed to prep ad-hoc exports from Infinite Campus to various other programs that require student Rosters."),
-        p("Simply upload the ad hoc from campus on the upload tab. On the Prep tab select the options for the roster you need."),
-        p(tags$b("It is reccomended that this App be run in a full sized window"))
-      )
-    )
-  ),
-
-  #### UPLOAD PAGE #####
-  ## right now this has file options, I may move those to the prep page.
-  tabPanel(
-    "Upload",
-    titlePanel("Uploading Files"),
-    sidebarLayout(
-      sidebarPanel(
-        fileInput("file1", "Choose CSV File",
-          multiple = FALSE,
-          accept = c(
-            "text/csv",
-            "text/comma-separated-values,text/plain",
-            ".csv"
-          )
-        ),
-        shinyjs::useShinyjs(),
-        actionButton("append", "Show Preperations"),
-        selectInput("rosterType", "Choose a roster to prep",
-          choices = c("None", "HMH (Gov/Hist)", "IHT", "PLTW (Elementary)", "Waterford")
-        ),
-        uiOutput("schoolSelectIHT"),
-        uiOutput("teacherSelect"),
-        uiOutput("periodSelect"),
-        uiOutput("hmhFileOptions"),
-
-
-        h6("Options should remain in the default position unless you know what you're doing"),
-        # Horizontal line
-        tags$hr(),
-
-        # Input: Checkbox if file has header
-        checkboxInput("header", "Header", TRUE),
-
-        # Horizontal line
-        tags$hr(),
-
-        # Input: Select number of rows to display
-        radioButtons("disp", "Display",
-          choices = c(
-            Head = "head",
-            All = "all"
-          ),
-          selected = "head"
-        )
-      ),
-
-      ## this shows the uploaded data set
-      mainPanel(
-        tableOutput("contents")
-      )
-    )
-  ),
-
-  #### PREPARED FILE #####
-  tabPanel(
-    "Prep",
-    mainPanel(
-      uiOutput("exportTitle"),
-      downloadButton("downloadData", "Download"),
-      tableOutput("prepped")
-    )
-  )
-)
-
-
 
 ###### SERVER FUNCTIONS ######
 server <- function(input, output, session) {
-
-
-
+  
+  
+  
   #### Data ####
-
+  
   ## Extract the CSV
   FileData <- reactive({
     infile <- input$file1
     if (FileReady() == F) {
       return(NULL)
     }
-
+    
     read.csv(infile$datapath,
-      header = input$header,
-      sep = ",",
-      quote = '"',
-      stringsAsFactors = FALSE
+             header = input$header,
+             sep = ",",
+             quote = '"',
+             stringsAsFactors = FALSE
     )
   })
-
+  
   ## Show Uploaded Data
   output$contents <- renderTable({
     df <- FileData()
-
+    
     if (input$disp == "head") {
       return(head(df))
     }
@@ -126,13 +41,13 @@ server <- function(input, output, session) {
       return(df)
     }
   })
-
+  
   ## What Kind of file is being Prepped?
   FilePrep <- reactive({
     if (FileReady() == F) {
       return(NULL)
     }
-
+    
     ## if it's IHT Do the IHT PREP
     if (input$rosterType == "IHT") {
       if (input$SchoolDropdown == "Elementary") {
@@ -148,7 +63,7 @@ server <- function(input, output, session) {
         return(NULL)
       }
     }
-
+    
     else if (input$rosterType == "HMH (Gov/Hist)") {
       if (input$hmhFileDropdown == "Class") {
         return(HMHClass())
@@ -166,18 +81,18 @@ server <- function(input, output, session) {
     else if (input$rosterType == "Waterford") {
       return(WaterfordPrep())
     }
-
+    
     else {
       return(NULL)
     }
   })
-
-
+  
+  
   ###### PREPPING THE FILES ######
-
-
+  
+  
   ##### IHT  #####
-
+  
   #### IHT PREP ELEMENTARY LEVEL ####
   ElementaryIHT <- reactive({
     FileData() %>%
@@ -207,11 +122,11 @@ server <- function(input, output, session) {
       add_column("email" = NA, .before = "secondary email") %>%
       add_column(height = NA, weight = NA, .before = "birthdate") %>%
       add_column(rhr = NA, max = NA, .after = "birthdate") -> ihtELM
-
-
+    
+    
     return(ihtELM)
   })
-
+  
   #### IHT PREP JR. HIGH SCHOOL LEVEL ####
   JrHighSchoolIHT <- reactive({
     FileData() %>%
@@ -238,7 +153,7 @@ server <- function(input, output, session) {
       add_column(rhr = NA, max = NA, .after = "birthdate") -> ihtJH
     return(ihtJH)
   })
-
+  
   #### IHT PREP HIGH SCHOOL LEVEL ####
   HighSChoolIHT <- reactive({
     FileData() %>%
@@ -266,12 +181,12 @@ server <- function(input, output, session) {
       add_column(rhr = NA, max = NA, .after = "birthdate") -> ihtHS
     return(ihtHS)
   })
-
-
-
-
+  
+  
+  
+  
   ##### HMH ####
-
+  
   #### HMH Class file ####
   HMHClass <- reactive({
     FileData() %>%
@@ -298,7 +213,7 @@ server <- function(input, output, session) {
       )) -> CLASS
     return(CLASS)
   })
-
+  
   #### HMH Users file ####
   HMHUsers <- reactive({
     FileData() %>%
@@ -324,7 +239,7 @@ server <- function(input, output, session) {
       ) -> USERS
     return(USERS)
   })
-
+  
   #### HMH Class Assignments file ####
   HMHClassAssignments <- reactive({
     FilePrep() %>%
@@ -339,15 +254,15 @@ server <- function(input, output, session) {
       ) -> CLASSASSIGNMENTS
     return(CLASSASSIGNMENTS)
   })
-
-
-
+  
+  
+  
   ##### Waterford #####
-
+  
   #### Waterford Prepped File ####
   WaterfordPrep <- reactive({
     df <- FileData()
-
+    
     df %>%
       distinct(student_studentNumber, .keep_all = T) %>%
       mutate(student_grade = replace(student_grade, student_grade == "KF", "K")) %>%
@@ -398,23 +313,23 @@ server <- function(input, output, session) {
         Username,
         Password
       ) -> waterford
-
+    
     return(waterford)
   })
-
-
+  
+  
   ##### PLTW #####
-
+  
   #### PLTW Elementary Classes ####
   ElementaryPLTW <- reactive({
     elemPLTW <- FileData()
     elemPLTW$schoolName <- substr(elemPLTW$student_calendarName, 7, length(elemPLTW$student_calendarName))
-
-
+    
+    
     start_date <- input$startDatePLTW
     end_date <- input$endDatePLTW
-
-
+    
+    
     elemPLTW %>%
       mutate(
         courseCode = case_when(
@@ -444,16 +359,16 @@ server <- function(input, output, session) {
         "DOB" = student_birthdate
       )
   })
-
-
+  
+  
   ## Render the prepped data
   output$prepped <- renderTable({
     df <- FilePrep()
-
+    
     return(df)
   })
-
-
+  
+  
   #### EXPORT DATA ####
   output$downloadData <- downloadHandler(
     filename = function() {
@@ -463,9 +378,9 @@ server <- function(input, output, session) {
       write.csv(FilePrep(), file, row.names = FALSE, na = "")
     }
   )
-
+  
   #### UI ####
-
+  
   ## select the level of institution for IHT
   output$schoolSelectIHT <- renderUI({
     if (FileReady() == F) {
@@ -474,13 +389,13 @@ server <- function(input, output, session) {
     if (FileCorrect() == F) {
       return(NULL)
     }
-
-
+    
+    
     if (input$rosterType == "IHT") {
       if (is.null(df)) {
         return(NULL)
       }
-
+      
       items <- c("Elementary", "Junior High", "High School")
       selectInput("SchoolDropdown", "School", items)
     }
@@ -488,7 +403,7 @@ server <- function(input, output, session) {
       return(NULL)
     }
   })
-
+  
   ## select the teacher for elementary teachers in IHT
   output$teacherSelect <- renderUI({
     if (FileReady() == F) {
@@ -497,12 +412,12 @@ server <- function(input, output, session) {
     if (FileCorrect() == F) {
       return(NULL)
     }
-
-
-
+    
+    
+    
     ## This gets the list of teachers
-
-
+    
+    
     if (input$rosterType == "IHT") {
       df <- FileData() %>%
         as_tibble() %>%
@@ -510,15 +425,15 @@ server <- function(input, output, session) {
         mutate(student_grade = replace(student_grade, student_grade == "KF", "K")) %>%
         mutate(courseSection_teacherDisplay = str_replace_all(courseSection_teacherDisplay, ",", "-")) %>%
         separate(courseSection_teacherDisplay, into = c("peTeach", "elemteach"), sep = "-", extra = "drop")
-
+      
       if (is.null(df)) {
         return(NULL)
       }
       if (input$SchoolDropdown != "Elementary") {
         return(NULL)
       }
-
-
+      
+      
       items <- unique(df$peTeach)
       selectInput("teacherDropdown", "Select the teacher", items)
     }
@@ -526,7 +441,7 @@ server <- function(input, output, session) {
       return(NULL)
     }
   })
-
+  
   ## Period select for high School IHT
   output$periodSelect <- renderUI({
     if (FileReady() == F) {
@@ -535,7 +450,7 @@ server <- function(input, output, session) {
     if (FileCorrect() == F) {
       return(NULL)
     }
-
+    
     if (input$rosterType == "IHT") {
       ## This gets the list of periods
       df <- FileData() %>%
@@ -544,15 +459,15 @@ server <- function(input, output, session) {
         mutate(student_grade = replace(student_grade, student_grade == "KF", "K")) %>%
         mutate(courseSection_teacherDisplay = str_replace_all(courseSection_teacherDisplay, ",", "-")) %>%
         separate(function_IHTClassName, into = c("peTeach", "elemteach"), sep = 9, extra = "drop")
-
+      
       if (is.null(df)) {
         return(NULL)
       }
       if (input$SchoolDropdown != "High School") {
         return(NULL)
       }
-
-
+      
+      
       items <- unique(df$peTeach)
       items <- items[order(nchar(items), items)]
       selectInput("periodDropdown", "Select the period", items)
@@ -561,10 +476,10 @@ server <- function(input, output, session) {
       return(NULL)
     }
   })
-
+  
   observeEvent(input$append, {
     id <- paste0("Dropdown", input$append, "a")
-
+    
     if (ReadyHMH() == T) {
       appendTab(
         inputId = "tabs",
@@ -640,16 +555,16 @@ server <- function(input, output, session) {
     
     shinyjs::hide("append")
   })
-
-
+  
+  
   output$filePLTWPossible <- reactive({
     if (FileReady() == F) {
       return(NULL)
     }
-
+    
     titlePanel(readyPLTW2())
   })
-
+  
   eventReactive(input$file1, {
     if (readyPLTW2() == T) {
       insertTab(inputId = "tabs", )
@@ -658,13 +573,13 @@ server <- function(input, output, session) {
       hideTab(inputId = "tabs", target = "PLTW")
     }
   })
-
+  
   output$warningTitle <- renderUI({
     if (FileReady() == F) {
       return(NULL)
     }
     if (input$rosterType == "None") {
-
+      
     }
     else {
       if (FileCorrect() == F) {
@@ -675,7 +590,7 @@ server <- function(input, output, session) {
       }
     }
   })
-
+  
   ## renders the title for output page
   output$exportTitle <- renderUI({
     if (FileReady() == F) {
@@ -684,7 +599,7 @@ server <- function(input, output, session) {
     if (is.null(df)) {
       return(NULL)
     }
-
+    
     if (input$rosterType == "IHT") {
       if (input$SchoolDropdown != "Junior High") {
         if (input$SchoolDropdown == "Elementary") {
@@ -700,7 +615,7 @@ server <- function(input, output, session) {
     }
     return(NULL)
   })
-
+  
   ## File options for HMH
   output$hmhFileOptions <- renderUI({
     if (FileReady() == F) {
@@ -709,14 +624,14 @@ server <- function(input, output, session) {
     if (FileCorrect() == F) {
       return(NULL)
     }
-
-
+    
+    
     if (input$rosterType == "HMH (Gov/Hist)") {
       items <- c("Class", "Users", "Class Assignments")
       radioButtons("hmhFileDropdown", "Select Output File", items)
     }
   })
-
+  
   ## select the level of institution for PLTW
   output$schoolSelectElemPLTW <- renderUI({
     if (FileReady() == F) {
@@ -725,16 +640,16 @@ server <- function(input, output, session) {
     if (FileCorrect() == F) {
       return(NULL)
     }
-
-
+    
+    
     if (input$rosterType == "PLTW (Elementary)") {
       if (is.null(df)) {
         return(NULL)
       }
       elemPLTW <- FileData()
-
+      
       elemPLTW$schoolName <- substr(elemPLTW$student_calendarName, 7, length(elemPLTW$student_calendarName))
-
+      
       items <- unique(elemPLTW$schoolName)
       selectInput("schoolNamePLTW", "School", items)
     }
@@ -742,16 +657,16 @@ server <- function(input, output, session) {
       return(NULL)
     }
   })
-
-
-
-
+  
+  
+  
+  
   ## does the file have all field for PLTW
   output$readyPLTW <- reactive({
     if (FileReady() == F) {
       return(FALSE)
     }
-
+    
     check <- c(
       "student_grade", #
       "courseSection_TeacherEmail", #
@@ -763,9 +678,9 @@ server <- function(input, output, session) {
       "student_gender", #
       "student_birthdate"
     )
-
+    
     test <- check %in% names(FileData())
-
+    
     if (all(test) == T) {
       return(TRUE)
     }
@@ -773,12 +688,12 @@ server <- function(input, output, session) {
       return(FALSE)
     }
   })
-
+  
   readyPLTW2 <- reactive({
     if (FileReady() == F) {
       return(NULL)
     }
-
+    
     check <- c(
       "student_grade", #
       "courseSection_TeacherEmail", #
@@ -790,25 +705,25 @@ server <- function(input, output, session) {
       "student_gender", #
       "student_birthdate"
     )
-
-
+    
+    
     test <- check %in% names(FileData())
-
+    
     if (all(test) == T) {
       return(TRUE)
     }
     else {
       message("PLTW not ready to go")
-
+      
       return(FALSE)
     }
   })
-
+  
   ReadyIHT <- reactive({
     if (FileReady() == F) {
       return(NULL)
     }
-
+    
     check <- c(
       "student_grade", #
       "student_homeroomTeacher", #
@@ -825,10 +740,10 @@ server <- function(input, output, session) {
       "contacts_email", #
       "function_IHTClassName" #
     )
-
-
+    
+    
     test <- check %in% names(FileData())
-
+    
     if (all(test) == TRUE) {
       return(TRUE)
     }
@@ -899,9 +814,9 @@ server <- function(input, output, session) {
       return(FALSE)
     }
   })
-
+  
   #### ERROR CHECKING ####
-
+  
   ## is there a file ready and waiting?
   FileReady <- reactive({
     infile <- input$file1
@@ -911,13 +826,13 @@ server <- function(input, output, session) {
     }
     return(TRUE)
   })
-
+  
   FileCorrect <- reactive({
     if (FileReady() == F) {
       return(NULL)
     }
-
-
+    
+    
     if (input$rosterType == "IHT") {
       return(ReadyIHT())
     }
@@ -934,9 +849,6 @@ server <- function(input, output, session) {
       return(F)
     }
   })
-
+  
   outputOptions(output, "readyPLTW", suspendWhenHidden = FALSE)
 }
-
-# Run the application
-shinyApp(ui = ui, server = server)
