@@ -159,7 +159,7 @@ server <- function(input, output, session) {
       add_column(rhr = NA, max = NA, .after = "birthdate") -> ihtHS
     return(ihtHS)
   })
-  
+
   #### IHT PREPPED ####
 
   preppedIHT <- reactive({
@@ -176,11 +176,11 @@ server <- function(input, output, session) {
       return(NULL)
     }
   })
-  
-  
-  
-  
-  ##### HMH ####
+
+
+
+
+  ##### HMH #####
 
   #### HMH Class file ####
   HMHClass <- reactive({
@@ -265,7 +265,7 @@ server <- function(input, output, session) {
       return(NULL)
     }
   })
-  
+
 
   ##### Waterford #####
 
@@ -372,13 +372,6 @@ server <- function(input, output, session) {
 
   ###### Table Outputs ######
 
-  ## Render the prepped data
-  output$prepped <- renderTable({
-    df <- FilePrep()
-
-    return(df)
-  })
-
   ## Preped data for IHT
   output$displayIHT <- renderTable({
     return(preppedIHT())
@@ -386,7 +379,7 @@ server <- function(input, output, session) {
 
   ## Prepped data for HMH
   output$displayHMH <- renderTable({
-   return(preppedHMH())
+    return(preppedHMH())
   })
 
   ##  Prepped Data for Waterford
@@ -396,36 +389,26 @@ server <- function(input, output, session) {
 
 
   #### EXPORT DATA ####
-  output$downloadData <- downloadHandler(
-    filename = function() {
-      paste(input$rosterType, ".csv", sep = "")
-    },
-    content = function(file) {
-      write.csv(FilePrep(), file, row.names = FALSE, na = "")
-    }
-  )
-  
+
   ## HMH
   output$downloadDataHMH <- downloadHandler(
-    
     filename = function() {
       paste(input$hmhFileDropdown, ".csv", sep = "")
     },
     content = function(file) {
-      if(input$hmhFileDropdown == "Class"){
+      if (input$hmhFileDropdown == "Class") {
         write.csv(HMHClass(), file, row.names = FALSE, na = "")
       }
-      else if(input$hmhFileDropdown == "Users" ){
+      else if (input$hmhFileDropdown == "Users") {
         write.csv(HMHUsers(), file, row.names = FALSE, na = "")
       }
-      else if(input$hmhFileDropdown == "Class Assignments"){
+      else if (input$hmhFileDropdown == "Class Assignments") {
         write.csv(HMHClassAssignments(), file, row.names = FALSE, na = "")
       }
-      else{}
-      
+      else {}
     }
   )
-  
+
   ## IHT
   output$downloadDataIHT <- downloadHandler(
     filename = function() {
@@ -435,7 +418,7 @@ server <- function(input, output, session) {
       write.csv(preppedIHT(), file, row.names = FALSE, na = "")
     }
   )
-  
+
   ## PLTW
   output$downloadDataPLTW <- downloadHandler(
     filename = function() {
@@ -445,14 +428,14 @@ server <- function(input, output, session) {
       write.csv(FilePrep(), file, row.names = FALSE, na = "")
     }
   )
-  
+
   ## Waterfprd
   output$downloadDataWAterford <- downloadHandler(
     filename = function() {
-      paste(input$rosterType, ".csv", sep = "")
+      paste("waterford", ".csv", sep = "")
     },
     content = function(file) {
-      write.csv(FilePrep(), file, row.names = FALSE, na = "")
+      write.csv(WaterfordPrep(), file, row.names = FALSE, na = "")
     }
   )
 
@@ -528,11 +511,11 @@ server <- function(input, output, session) {
         tabPanel(
           "HMH",
           titlePanel("HMH Rosters"),
-          fluidRow( 
+          fluidRow(
             column(width = 3, uiOutput("hmhFileOptions")),
             column(width = 9, downloadButton("downloadDataHMH", "Download"))
-                   ),
-          
+          ),
+
           ## this shows the uploaded data set
           mainPanel(
             tableOutput("displayHMH")
@@ -608,31 +591,6 @@ server <- function(input, output, session) {
   # })
   #
 
-  ## renders the title for output page
-  output$exportTitle <- renderUI({
-    if (FileReady() == F) {
-      return(NULL)
-    }
-    if (is.null(df)) {
-      return(NULL)
-    }
-
-    if (input$rosterType == "IHT") {
-      if (input$SchoolDropdown != "Junior High") {
-        if (input$SchoolDropdown == "Elementary") {
-          titlePanel(paste0(input$SchoolDropdown, " ", input$rosterType, ": ", input$teacherDropdown))
-        }
-        else {
-          titlePanel(paste0(input$SchoolDropdown, " ", input$rosterType, ": ", input$periodDropdown))
-        }
-      }
-      else {
-        titlePanel(paste0(input$SchoolDropdown, " ", input$rosterType))
-      }
-    }
-    return(NULL)
-  })
-
   ## File options for HMH
   output$hmhFileOptions <- renderUI({
     items <- c("Class", "Users", "Class Assignments")
@@ -694,6 +652,7 @@ server <- function(input, output, session) {
     }
   })
 
+  ## does the file have all field for PLTW
   readyPLTW2 <- reactive({
     if (FileReady() == F) {
       return(NULL)
@@ -724,6 +683,7 @@ server <- function(input, output, session) {
     }
   })
 
+  ## does the file have all field for IHT
   ReadyIHT <- reactive({
     if (FileReady() == F) {
       return(NULL)
@@ -758,6 +718,7 @@ server <- function(input, output, session) {
     }
   })
 
+  ## does the file have all field for HMH
   ReadyHMH <- reactive({
     if (FileReady() == F) {
       return(NULL)
@@ -791,6 +752,7 @@ server <- function(input, output, session) {
     }
   })
 
+  ## does the file have all field for Waterford
   ReadyWaterford <- reactive({
     if (FileReady() == F) {
       return(NULL)
