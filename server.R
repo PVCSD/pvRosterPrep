@@ -176,7 +176,10 @@ server <- function(input, output, session) {
       return(NULL)
     }
   })
-
+  
+  
+  
+  
   ##### HMH ####
 
   #### HMH Class file ####
@@ -247,6 +250,22 @@ server <- function(input, output, session) {
     return(CLASSASSIGNMENTS)
   })
 
+  #### HMH Prepped ####
+  preppedHMH <- reactive({
+    if (input$hmhFileDropdown == "Class") {
+      return(HMHClass())
+    }
+    else if (input$hmhFileDropdown == "Users") {
+      return(HMHUsers())
+    }
+    else if (input$hmhFileDropdown == "Class Assignments") {
+      return(HMHClassAssignments())
+    }
+    else {
+      return(NULL)
+    }
+  })
+  
 
   ##### Waterford #####
 
@@ -366,19 +385,8 @@ server <- function(input, output, session) {
   })
 
   ## Prepped data for HMH
-  output$preppedHMH <- renderTable({
-    if (input$hmhFileDropdown == "Class") {
-      return(HMHClass())
-    }
-    else if (input$hmhFileDropdown == "Users") {
-      return(HMHUsers())
-    }
-    else if (input$hmhFileDropdown == "Class Assignments") {
-      return(HMHClassAssignments())
-    }
-    else {
-      return(NULL)
-    }
+  output$displayHMH <- renderTable({
+   return(preppedHMH())
   })
 
   ##  Prepped Data for Waterford
@@ -527,7 +535,7 @@ server <- function(input, output, session) {
           
           ## this shows the uploaded data set
           mainPanel(
-            tableOutput("preppedHMH")
+            tableOutput("displayHMH")
           )
         )
       )
