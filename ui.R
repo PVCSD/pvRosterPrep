@@ -11,7 +11,7 @@ library(shinythemes)
 ui <- navbarPage(
   "Rostering Preperation",
   id = "tabs",
-  
+
   #### HOME PAGE #####
   tabPanel(
     "Home",
@@ -26,7 +26,7 @@ ui <- navbarPage(
       )
     )
   ),
-  
+
   #### UPLOAD PAGE #####
   ## right now this has file options, I may move those to the prep page.
   tabPanel(
@@ -35,49 +35,49 @@ ui <- navbarPage(
     sidebarLayout(
       sidebarPanel(
         fileInput("file1", "Choose CSV File",
-                  multiple = FALSE,
-                  accept = c(
-                    "text/csv",
-                    "text/comma-separated-values,text/plain",
-                    ".csv"
-                  )
+          multiple = FALSE,
+          accept = c(
+            "text/csv",
+            "text/comma-separated-values,text/plain",
+            ".csv"
+          )
         ),
         shinyjs::useShinyjs(),
         actionButton("append", "Show Preperations"),
         selectInput("rosterType", "Choose a roster to prep",
-                    choices = c("None", "HMH (Gov/Hist)", "IHT", "PLTW (Elementary)", "Waterford")
+          choices = c("None", "HMH (Gov/Hist)", "IHT", "PLTW (Elementary)", "Waterford")
         ),
-       
-        
-        
-        
+
+
+
+
         h6("Options should remain in the default position unless you know what you're doing"),
         # Horizontal line
         tags$hr(),
-        
+
         # Input: Checkbox if file has header
         checkboxInput("header", "Header", TRUE),
-        
+
         # Horizontal line
         tags$hr(),
-        
+
         # Input: Select number of rows to display
         radioButtons("disp", "Display",
-                     choices = c(
-                       Head = "head",
-                       All = "all"
-                     ),
-                     selected = "head"
+          choices = c(
+            Head = "head",
+            All = "all"
+          ),
+          selected = "head"
         )
       ),
-      
+
       ## this shows the uploaded data set
       mainPanel(
         tableOutput("contents")
       )
     )
   ),
-  
+
   #### PREPARED FILE #####
   tabPanel(
     "Prep",
@@ -88,4 +88,3 @@ ui <- navbarPage(
     )
   )
 )
-
