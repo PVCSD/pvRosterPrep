@@ -159,7 +159,23 @@ server <- function(input, output, session) {
       add_column(rhr = NA, max = NA, .after = "birthdate") -> ihtHS
     return(ihtHS)
   })
+  
+  #### IHT PREPPED ####
 
+  preppedIHT <- reactive({
+    if (input$SchoolDropdown == "Elementary") {
+      return(ElementaryIHT())
+    }
+    else if (input$SchoolDropdown == "Junior High") {
+      return(JrHighSchoolIHT())
+    }
+    else if (input$SchoolDropdown == "High School") {
+      return(HighSchoolIHT())
+    }
+    else {
+      return(NULL)
+    }
+  })
 
   ##### HMH ####
 
@@ -345,19 +361,8 @@ server <- function(input, output, session) {
   })
 
   ## Preped data for IHT
-  output$preppedIHT <- renderTable({
-    if (input$SchoolDropdown == "Elementary") {
-      return(ElementaryIHT())
-    }
-    else if (input$SchoolDropdown == "Junior High") {
-      return(JrHighSchoolIHT())
-    }
-    else if (input$SchoolDropdown == "High School") {
-      return(HighSchoolIHT())
-    }
-    else {
-      return(NULL)
-    }
+  output$displayIHT <- renderTable({
+    return(preppedIHT())
   })
 
   ## Prepped data for HMH
@@ -384,6 +389,57 @@ server <- function(input, output, session) {
 
   #### EXPORT DATA ####
   output$downloadData <- downloadHandler(
+    filename = function() {
+      paste(input$rosterType, ".csv", sep = "")
+    },
+    content = function(file) {
+      write.csv(FilePrep(), file, row.names = FALSE, na = "")
+    }
+  )
+  
+  ## HMH
+  output$downloadDataHMH <- downloadHandler(
+    
+    filename = function() {
+      paste(input$hmhFileDropdown, ".csv", sep = "")
+    },
+    content = function(file) {
+      if(input$hmhFileDropdown == "Class"){
+        write.csv(HMHClass(), file, row.names = FALSE, na = "")
+      }
+      else if(input$hmhFileDropdown == "Users" ){
+        write.csv(HMHUsers(), file, row.names = FALSE, na = "")
+      }
+      else if(input$hmhFileDropdown == "Class Assignments"){
+        write.csv(HMHClassAssignments(), file, row.names = FALSE, na = "")
+      }
+      else{}
+      
+    }
+  )
+  
+  ## IHT
+  output$downloadDataIHT <- downloadHandler(
+    filename = function() {
+      paste("IHT", ".csv", sep = "")
+    },
+    content = function(file) {
+      write.csv(preppedIHT(), file, row.names = FALSE, na = "")
+    }
+  )
+  
+  ## PLTW
+  output$downloadDataPLTW <- downloadHandler(
+    filename = function() {
+      paste(input$rosterType, ".csv", sep = "")
+    },
+    content = function(file) {
+      write.csv(FilePrep(), file, row.names = FALSE, na = "")
+    }
+  )
+  
+  ## Waterfprd
+  output$downloadDataWAterford <- downloadHandler(
     filename = function() {
       paste(input$rosterType, ".csv", sep = "")
     },
@@ -464,7 +520,11 @@ server <- function(input, output, session) {
         tabPanel(
           "HMH",
           titlePanel("HMH Rosters"),
-          uiOutput("hmhFileOptions"),
+          fluidRow( 
+            column(width = 3, uiOutput("hmhFileOptions")),
+            column(width = 9, downloadButton("downloadDataHMH", "Download"))
+                   ),
+          
           ## this shows the uploaded data set
           mainPanel(
             tableOutput("preppedHMH")
@@ -483,12 +543,13 @@ server <- function(input, output, session) {
             sidebarPanel(
               uiOutput("schoolSelectIHT"),
               uiOutput("teacherSelect"),
-              uiOutput("periodSelect")
+              uiOutput("periodSelect"),
+              downloadButton("downloadDataIHT", "Download")
             ),
 
             ## this shows the uploaded data set
             mainPanel(
-              tableOutput("preppedIHT")
+              tableOutput("displayIHT")
             )
           )
         )

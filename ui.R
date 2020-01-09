@@ -44,11 +44,6 @@ ui <- navbarPage(
         ),
         shinyjs::useShinyjs(),
         actionButton("append", "Show Preperations"),
-        selectInput("rosterType", "Choose a roster to prep",
-          choices = c("None", "HMH (Gov/Hist)", "IHT", "PLTW (Elementary)", "Waterford")
-        ),
-
-
 
 
         h6("Options should remain in the default position unless you know what you're doing"),
