@@ -57,7 +57,7 @@ server <- function(input, output, session) {
       
     }
     else if (input$rosterType == "Waterford") {
-      return(WaterfordPrep())
+      
     }
     
     else {
@@ -379,7 +379,12 @@ server <- function(input, output, session) {
     
   })
   
+  ##  Prepped Data for Waterford
+  output$preppedWaterford <- renderTable({
+    return(WaterfordPrep())
+  })
   
+
   #### EXPORT DATA ####
   output$downloadData <- downloadHandler(
     filename = function() {
@@ -466,18 +471,13 @@ server <- function(input, output, session) {
         inputId = "tabs",
         tabPanel(
           "HMH",
-          # condition = "output.readyPLTW == true",
           titlePanel("HMH Rosters"),
-          sidebarLayout(
-            sidebarPanel(
-              uiOutput("hmhFileOptions")
-            ),
-            
-            ## this shows the uploaded data set
+          uiOutput("hmhFileOptions"),
+           ## this shows the uploaded data set
             mainPanel(
               tableOutput("preppedHMH")
             )
-          )
+          
         )
       )
     }
@@ -526,16 +526,12 @@ server <- function(input, output, session) {
         inputId = "tabs",
         tabPanel(
           "Waterford",
-          # condition = "output.readyPLTW == true",
-          titlePanel("HMH Rosters"),
-          sidebarLayout(
-            sidebarPanel(
-              uiOutput("schoolSelectElemPLTW")
-            ),
-            
+          titlePanel("Waterford Roster"),
             ## this shows the uploaded data set
-            mainPanel()
-          )
+            mainPanel(
+              tableOutput("preppedWaterford")
+            )
+          
         )
       )
     }
@@ -552,23 +548,7 @@ server <- function(input, output, session) {
   #   }
   # })
   # 
-  output$warningTitle <- renderUI({
-    if (FileReady() == F) {
-      return(NULL)
-    }
-    if (input$rosterType == "None") {
-      
-    }
-    else {
-      if (FileCorrect() == F) {
-        titlePanel("MISSING ROWS")
-      }
-      else {
-        titlePanel("All Rows Present")
-      }
-    }
-  })
-  
+
   ## renders the title for output page
   output$exportTitle <- renderUI({
     if (FileReady() == F) {
@@ -598,7 +578,7 @@ server <- function(input, output, session) {
   output$hmhFileOptions <- renderUI({
     
       items <- c("Class", "Users", "Class Assignments")
-      radioButtons("hmhFileDropdown", "Select Output File", items)
+      selectInput("hmhFileDropdown", "Select Output File", items)
 
   })
   
