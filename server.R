@@ -54,18 +54,7 @@ server <- function(input, output, session) {
     }
     
     else if (input$rosterType == "HMH (Gov/Hist)") {
-      if (input$hmhFileDropdown == "Class") {
-        return(HMHClass())
-      }
-      else if (input$hmhFileDropdown == "Users") {
-        return(HMHUsers())
-      }
-      else if (input$hmhFileDropdown == "Class Assignments") {
-        return(HMHClassAssignments())
-      }
-      else {
-        return(NULL)
-      }
+      
     }
     else if (input$rosterType == "Waterford") {
       return(WaterfordPrep())
@@ -172,8 +161,6 @@ server <- function(input, output, session) {
   })
   
   
-  
-  
   ##### HMH ####
   
   #### HMH Class file ####
@@ -231,10 +218,10 @@ server <- function(input, output, session) {
   
   #### HMH Class Assignments file ####
   HMHClassAssignments <- reactive({
-    FilePrep() %>%
+    FileData() %>%
       mutate("CLASSLOCALID" = paste(cal_endYear, courseSection_courseID, sectionSchedule_periodStart, sep = "_")) %>%
-      mutate(student_studentNumber, "ROLE" = ifelse(student_studentNumber >= 500000, "T", "S")) %>%
-      mutate(student_studentNumber, "OSITION" = ifelse(student_studentNumber >= 500000, "L", NA)) %>%
+      mutate("ROLE" = ifelse(student_studentNumber >= 500000, "T", "S")) %>%
+      mutate("POSITION" = ifelse(student_studentNumber >= 500000, "L", NA)) %>%
       select(
         "SCHOOLYEAR" = cal_endYear,
         CLASSLOCALID,
@@ -243,7 +230,6 @@ server <- function(input, output, session) {
       ) -> CLASSASSIGNMENTS
     return(CLASSASSIGNMENTS)
   })
-  
   
   
   ##### Waterford #####
@@ -349,6 +335,7 @@ server <- function(input, output, session) {
       )
   })
   
+  ###### Table Outputs ######
   
   ## Render the prepped data
   output$prepped <- renderTable({
@@ -357,6 +344,7 @@ server <- function(input, output, session) {
     return(df)
   })
   
+  ## Preped data for IHT
   output$preppedIHT <- renderTable({
     
     if (input$SchoolDropdown == "Elementary") {
@@ -367,6 +355,23 @@ server <- function(input, output, session) {
     }
     else if (input$SchoolDropdown == "High School") {
       return(HighSchoolIHT())
+    }
+    else {
+      return(NULL)
+    }
+    
+  })
+  
+  ## Prepped data for HMH 
+  output$preppedHMH <- renderTable({
+    if (input$hmhFileDropdown == "Class") {
+      return(HMHClass())
+    }
+    else if (input$hmhFileDropdown == "Users") {
+      return(HMHUsers())
+    }
+    else if (input$hmhFileDropdown == "Class Assignments") {
+      return(HMHClassAssignments())
     }
     else {
       return(NULL)
@@ -465,11 +470,13 @@ server <- function(input, output, session) {
           titlePanel("HMH Rosters"),
           sidebarLayout(
             sidebarPanel(
-              uiOutput("schoolSelectElemPLTW")
+              uiOutput("hmhFileOptions")
             ),
             
             ## this shows the uploaded data set
-            mainPanel()
+            mainPanel(
+              tableOutput("preppedHMH")
+            )
           )
         )
       )
@@ -589,18 +596,10 @@ server <- function(input, output, session) {
   
   ## File options for HMH
   output$hmhFileOptions <- renderUI({
-    if (FileReady() == F) {
-      return(NULL)
-    }
-    if (FileCorrect() == F) {
-      return(NULL)
-    }
     
-    
-    if (input$rosterType == "HMH (Gov/Hist)") {
       items <- c("Class", "Users", "Class Assignments")
       radioButtons("hmhFileDropdown", "Select Output File", items)
-    }
+
   })
   
   ## select the level of institution for PLTW
@@ -628,9 +627,7 @@ server <- function(input, output, session) {
       return(NULL)
     }
   })
-  
-  
-  
+
   
   ## does the file have all field for PLTW
   output$readyPLTW <- reactive({

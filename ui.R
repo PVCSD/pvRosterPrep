@@ -48,7 +48,7 @@ ui <- navbarPage(
                     choices = c("None", "HMH (Gov/Hist)", "IHT", "PLTW (Elementary)", "Waterford")
         ),
        
-        uiOutput("hmhFileOptions"),
+        
         
         
         h6("Options should remain in the default position unless you know what you're doing"),
