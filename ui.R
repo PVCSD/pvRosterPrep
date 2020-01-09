@@ -47,9 +47,7 @@ ui <- navbarPage(
         selectInput("rosterType", "Choose a roster to prep",
                     choices = c("None", "HMH (Gov/Hist)", "IHT", "PLTW (Elementary)", "Waterford")
         ),
-        uiOutput("schoolSelectIHT"),
-        uiOutput("teacherSelect"),
-        uiOutput("periodSelect"),
+       
         uiOutput("hmhFileOptions"),
         
         

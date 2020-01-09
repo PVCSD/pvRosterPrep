@@ -50,18 +50,7 @@ server <- function(input, output, session) {
     
     ## if it's IHT Do the IHT PREP
     if (input$rosterType == "IHT") {
-      if (input$SchoolDropdown == "Elementary") {
-        return(ElementaryIHT())
-      }
-      else if (input$SchoolDropdown == "Junior High") {
-        return(JrHighSchoolIHT())
-      }
-      else if (input$SchoolDropdown == "High School") {
-        return(HighSchoolIHT())
-      }
-      else {
-        return(NULL)
-      }
+    
     }
     
     else if (input$rosterType == "HMH (Gov/Hist)") {
@@ -155,7 +144,7 @@ server <- function(input, output, session) {
   })
   
   #### IHT PREP HIGH SCHOOL LEVEL ####
-  HighSChoolIHT <- reactive({
+  HighSchoolIHT <- reactive({
     FileData() %>%
       as_tibble() %>%
       ## Remove duplicates
@@ -368,6 +357,23 @@ server <- function(input, output, session) {
     return(df)
   })
   
+  output$preppedIHT <- renderTable({
+    
+    if (input$SchoolDropdown == "Elementary") {
+      return(ElementaryIHT())
+    }
+    else if (input$SchoolDropdown == "Junior High") {
+      return(JrHighSchoolIHT())
+    }
+    else if (input$SchoolDropdown == "High School") {
+      return(HighSchoolIHT())
+    }
+    else {
+      return(NULL)
+    }
+    
+  })
+  
   
   #### EXPORT DATA ####
   output$downloadData <- downloadHandler(
@@ -383,42 +389,21 @@ server <- function(input, output, session) {
   
   ## select the level of institution for IHT
   output$schoolSelectIHT <- renderUI({
-    if (FileReady() == F) {
-      return(NULL)
-    }
-    if (FileCorrect() == F) {
-      return(NULL)
-    }
-    
-    
-    if (input$rosterType == "IHT") {
-      if (is.null(df)) {
-        return(NULL)
-      }
+
       
       items <- c("Elementary", "Junior High", "High School")
       selectInput("SchoolDropdown", "School", items)
-    }
-    else {
-      return(NULL)
-    }
+
   })
   
   ## select the teacher for elementary teachers in IHT
   output$teacherSelect <- renderUI({
-    if (FileReady() == F) {
-      return(NULL)
-    }
-    if (FileCorrect() == F) {
-      return(NULL)
-    }
-    
     
     
     ## This gets the list of teachers
     
     
-    if (input$rosterType == "IHT") {
+
       df <- FileData() %>%
         as_tibble() %>%
         distinct(student_studentNumber, .keep_all = T) %>%
@@ -436,22 +421,14 @@ server <- function(input, output, session) {
       
       items <- unique(df$peTeach)
       selectInput("teacherDropdown", "Select the teacher", items)
-    }
-    else {
-      return(NULL)
-    }
+    
   })
   
   ## Period select for high School IHT
   output$periodSelect <- renderUI({
-    if (FileReady() == F) {
-      return(NULL)
-    }
-    if (FileCorrect() == F) {
-      return(NULL)
-    }
     
-    if (input$rosterType == "IHT") {
+    
+   
       ## This gets the list of periods
       df <- FileData() %>%
         as_tibble() %>%
@@ -471,12 +448,11 @@ server <- function(input, output, session) {
       items <- unique(df$peTeach)
       items <- items[order(nchar(items), items)]
       selectInput("periodDropdown", "Select the period", items)
-    }
-    else {
-      return(NULL)
-    }
+   
   })
   
+  
+  ## Add the tabs that are ready to go
   observeEvent(input$append, {
     id <- paste0("Dropdown", input$append, "a")
     
@@ -507,11 +483,15 @@ server <- function(input, output, session) {
           titlePanel("IHT Rosters"),
           sidebarLayout(
             sidebarPanel(
-              uiOutput("schoolSelectElemPLTW")
+              uiOutput("schoolSelectIHT"),
+              uiOutput("teacherSelect"),
+              uiOutput("periodSelect")
             ),
             
             ## this shows the uploaded data set
-            mainPanel()
+            mainPanel(
+              tableOutput("preppedIHT")
+            )
           )
         )
       )
@@ -556,24 +536,15 @@ server <- function(input, output, session) {
     shinyjs::hide("append")
   })
   
-  
-  output$filePLTWPossible <- reactive({
-    if (FileReady() == F) {
-      return(NULL)
-    }
-    
-    titlePanel(readyPLTW2())
-  })
-  
-  eventReactive(input$file1, {
-    if (readyPLTW2() == T) {
-      insertTab(inputId = "tabs", )
-    }
-    else {
-      hideTab(inputId = "tabs", target = "PLTW")
-    }
-  })
-  
+  # eventReactive(input$file1, {
+  #   if (readyPLTW2() == T) {
+  #     insertTab(inputId = "tabs", )
+  #   }
+  #   else {
+  #     hideTab(inputId = "tabs", target = "PLTW")
+  #   }
+  # })
+  # 
   output$warningTitle <- renderUI({
     if (FileReady() == F) {
       return(NULL)
