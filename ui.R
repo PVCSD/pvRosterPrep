@@ -71,15 +71,5 @@ ui <- navbarPage(
         tableOutput("contents")
       )
     )
-  ),
-
-  #### PREPARED FILE #####
-  tabPanel(
-    "Prep",
-    mainPanel(
-      uiOutput("exportTitle"),
-      downloadButton("downloadData", "Download"),
-      tableOutput("prepped")
-    )
   )
 )
