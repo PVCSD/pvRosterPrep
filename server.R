@@ -312,10 +312,8 @@ server <- function(input, output, session) {
     elemPLTW <- FileData()
     elemPLTW$schoolName <- substr(elemPLTW$student_calendarName, 7, length(elemPLTW$student_calendarName))
 
-
     start_date <- input$startDate
     end_date <- input$endDate
-
 
     elemPLTW %>%
       mutate(
@@ -348,11 +346,45 @@ server <- function(input, output, session) {
     return(result)
   })
   
-  
+  #### PLTW High School Classes ####
+  HighSchoolPLTW <- reactive({
+    hsPLTW <- FileData()
+    
+    start_date <- input$startDate
+    end_date <- input$endDate
+    
+    hsPLTW %>%
+      #left_join(TeacherEmails)%>%6662045 
+      mutate(courseCode= case_when(
+        courseSection_courseNumber == "171501" ~ "PBS",
+        courseSection_courseNumber == "162607" ~ "CSP",
+        courseSection_courseNumber == "162601" ~ "IED",
+        courseSection_courseNumber == "162603" ~ "POE",
+        TRUE ~ "Error"
+      ), 
+      startDate = as.Date(start_date), 
+      endDate = as.Date(end_date)) %>%
+      filter(courseCode != "Error")%>%
+      select("COURSE CODE"= courseCode, 
+             "COURSE BEGIN DATE"= startDate, 
+             "COURSE END DATE"= endDate, 
+             "STUDENT FIRST" = student_firstName, 
+             "STUDENT LAST" = student_lastName,
+             "STUDENT GRADE" = student_grade, 
+             "STUDENT STATE ID NUMBER" = student_stateID, 
+             "GENDER"= student_gender,
+             "DOB" = student_birthdate
+      )->result
+    
+    return(result)
+  })
   
   preppedPLTW <- reactive({
     if(input$rosterTypePLTW == "Elementary"){
       ElementaryPLTW()
+    }
+    else{
+      HighSchoolPLTW()
     }
   })
 
