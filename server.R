@@ -23,7 +23,7 @@ server <- function(input, output, session) {
     }
 
     read.csv(infile$datapath,
-      header = input$header,
+      header = TRUE,
       sep = ",",
       quote = '"',
       stringsAsFactors = FALSE
