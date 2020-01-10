@@ -138,7 +138,6 @@ server <- function(input, output, session) {
   })
 
   #### IHT PREPPED ####
-
   preppedIHT <- reactive({
     if (input$SchoolDropdown == "Elementary") {
       return(ElementaryIHT())
@@ -584,7 +583,8 @@ server <- function(input, output, session) {
               selectInput("rosterTypePLTW", "Select School Level", choices= c("Elementary","Secondary" )),
               uiOutput("schoolSelectElemPLTW"), 
               dateInput("startDate", "Class Start Date", value=lubridate::today()),
-              dateInput("endDate", "Class End Date", value=lubridate::today())
+              dateInput("endDate", "Class End Date", value=lubridate::today()),
+              downloadButton("downloadDataPLTW", "Download")
             ),
 
             ## this shows the uploaded data set
@@ -601,7 +601,8 @@ server <- function(input, output, session) {
         inputId = "tabs",
         tabPanel(
           "Waterford",
-          titlePanel("Waterford Roster"),
+          titlePanel("Waterford Roster"), 
+          fluidRow(downloadButton("downloadDataWaterford", "Download")),
           ## this shows the uploaded data set
           mainPanel(
             tableOutput("displayWaterford")
