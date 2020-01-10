@@ -42,29 +42,6 @@ server <- function(input, output, session) {
     }
   })
 
-  ## What Kind of file is being Prepped?
-  FilePrep <- reactive({
-    if (FileReady() == F) {
-      return(NULL)
-    }
-
-    ## if it's IHT Do the IHT PREP
-    if (input$rosterType == "IHT") {
-
-    }
-
-    else if (input$rosterType == "HMH (Gov/Hist)") {
-
-    }
-    else if (input$rosterType == "Waterford") {
-
-    }
-
-    else {
-      return(NULL)
-    }
-  })
-
 
   ###### PREPPING THE FILES ######
 
@@ -336,19 +313,19 @@ server <- function(input, output, session) {
     elemPLTW$schoolName <- substr(elemPLTW$student_calendarName, 7, length(elemPLTW$student_calendarName))
 
 
-    start_date <- input$startDatePLTW
-    end_date <- input$endDatePLTW
+    start_date <- input$startDate
+    end_date <- input$endDate
 
 
     elemPLTW %>%
       mutate(
         courseCode = case_when(
           student_grade == "KF" ~ "ELE_K",
-          student_grade == "01" ~ "ELE_1",
-          student_grade == "02" ~ "ELE_2",
-          student_grade == "03" ~ "ELE_3",
-          student_grade == "04" ~ "ELE_4",
-          student_grade == "05" ~ "ELE_5",
+          student_grade == "1" ~ "ELE_1",
+          student_grade == "2" ~ "ELE_2",
+          student_grade == "3" ~ "ELE_3",
+          student_grade == "4" ~ "ELE_4",
+          student_grade == "5" ~ "ELE_5",
           TRUE ~ "Error"
         ),
         startDate = start_date,
@@ -361,13 +338,22 @@ server <- function(input, output, session) {
         "COURSE CODE" = courseCode,
         "COURSE BEGIN DATE" = startDate,
         "COURSE END DATE" = endDate,
-        "STUDENT FIRST" = student_legalFirstName,
-        "STUDENT LAST" = student_legalLastName,
+        "STUDENT FIRST" = student_firstName,
+        "STUDENT LAST" = student_lastName,
         "STUDENT GRADE" = student_grade,
         "STUDENT STATE ID NUMBER" = student_stateID,
         "GENDER" = student_gender,
         "DOB" = student_birthdate
-      )
+      ) -> result
+    return(result)
+  })
+  
+  
+  
+  preppedPLTW <- reactive({
+    if(input$rosterTypePLTW == "Elementary"){
+      ElementaryPLTW()
+    }
   })
 
   ###### Table Outputs ######
@@ -383,8 +369,13 @@ server <- function(input, output, session) {
   })
 
   ##  Prepped Data for Waterford
-  output$preppedWaterford <- renderTable({
+  output$displayWaterford <- renderTable({
     return(WaterfordPrep())
+  })
+  
+  ##  Prepped Data for Waterford
+  output$displayPLTW <- renderTable({
+    return(preppedPLTW())
   })
 
 
@@ -425,11 +416,11 @@ server <- function(input, output, session) {
       paste(input$rosterType, ".csv", sep = "")
     },
     content = function(file) {
-      write.csv(FilePrep(), file, row.names = FALSE, na = "")
+      write.csv(preppedPLTW(), file, row.names = FALSE, na = "")
     }
   )
 
-  ## Waterfprd
+  ## Waterford
   output$downloadDataWAterford <- downloadHandler(
     filename = function() {
       paste("waterford", ".csv", sep = "")
@@ -504,7 +495,9 @@ server <- function(input, output, session) {
   ## Add the tabs that are ready to go
   observeEvent(input$append, {
     id <- paste0("Dropdown", input$append, "a")
-
+    
+    
+    ## HMH TAB
     if (ReadyHMH() == T) {
       appendTab(
         inputId = "tabs",
@@ -523,6 +516,7 @@ server <- function(input, output, session) {
         )
       )
     }
+    ## IHT TAB
     if (ReadyIHT() == T) {
       appendTab(
         inputId = "tabs",
@@ -546,24 +540,30 @@ server <- function(input, output, session) {
         )
       )
     }
+    ## PLTW TAB
     if (readyPLTW2() == T) {
       appendTab(
         inputId = "tabs",
         tabPanel(
           "PLTW",
-          # condition = "output.readyPLTW == true",
           titlePanel("PLTW Rosters"),
           sidebarLayout(
             sidebarPanel(
-              uiOutput("schoolSelectElemPLTW")
+              selectInput("rosterTypePLTW", "Select School Level", choices= c("Elementary","Secondary" )),
+              uiOutput("schoolSelectElemPLTW"), 
+              dateInput("startDate", "Class Start Date", value=lubridate::today()),
+              dateInput("endDate", "Class End Date", value=lubridate::today())
             ),
 
             ## this shows the uploaded data set
-            mainPanel()
+            mainPanel(
+              tableOutput("displayPLTW")
+            )
           )
         )
       )
     }
+    ## Waterford Tab
     if (ReadyWaterford() == T) {
       appendTab(
         inputId = "tabs",
@@ -572,7 +572,7 @@ server <- function(input, output, session) {
           titlePanel("Waterford Roster"),
           ## this shows the uploaded data set
           mainPanel(
-            tableOutput("preppedWaterford")
+            tableOutput("displayWaterford")
           )
         )
       )
@@ -602,15 +602,13 @@ server <- function(input, output, session) {
     if (FileReady() == F) {
       return(NULL)
     }
-    if (FileCorrect() == F) {
+    if (readyPLTW2() == F) {
       return(NULL)
     }
 
 
-    if (input$rosterType == "PLTW (Elementary)") {
-      if (is.null(df)) {
-        return(NULL)
-      }
+    if (input$rosterTypePLTW == "Elementary") {
+
       elemPLTW <- FileData()
 
       elemPLTW$schoolName <- substr(elemPLTW$student_calendarName, 7, length(elemPLTW$student_calendarName))
@@ -793,28 +791,6 @@ server <- function(input, output, session) {
     return(TRUE)
   })
 
-  FileCorrect <- reactive({
-    if (FileReady() == F) {
-      return(NULL)
-    }
-
-
-    if (input$rosterType == "IHT") {
-      return(ReadyIHT())
-    }
-    else if (input$rosterType == "HMH (Gov/Hist)") {
-      return(ReadyHMH())
-    }
-    else if (input$rosterType == "Waterford") {
-      return(ReadyWaterford())
-    }
-    else if (input$rosterType == "PLTW (Elementary)") {
-      return(readyPLTW2())
-    }
-    else {
-      return(F)
-    }
-  })
 
   outputOptions(output, "readyPLTW", suspendWhenHidden = FALSE)
 }
