@@ -328,9 +328,8 @@ server <- function(input, output, session) {
           student_grade == "5" ~ "ELE_5",
           TRUE ~ "Error"
         ),
-        startDate = start_date,
-        endDate = end_date
-      ) %>%
+        startDate = format(as.Date(start_date), "%m/%d/%Y"), 
+        endDate = format(as.Date(end_date), "%m/%d/%Y")) %>%
       filter(courseCode != "Error") %>%
       filter(schoolName == input$schoolNamePLTW) %>%
       select(
@@ -364,10 +363,11 @@ server <- function(input, output, session) {
         courseSection_courseNumber == "162603" ~ "POE",
         TRUE ~ "Error"
       ), 
-      startDate = as.Date(start_date), 
-      endDate = as.Date(end_date)) %>%
+      startDate = format(as.Date(start_date), "%m/%d/%Y"), 
+      endDate = format(as.Date(end_date), "%m/%d/%Y")) %>%
       filter(courseCode != "Error")%>%
-      select("COURSE CODE"= courseCode, 
+      select("TEACHER EMAIL" = courseSection_TeacherEmail,
+             "COURSE CODE"= courseCode, 
              "COURSE BEGIN DATE"= startDate, 
              "COURSE END DATE"= endDate, 
              "STUDENT FIRST" = student_firstName, 
@@ -585,8 +585,8 @@ server <- function(input, output, session) {
             sidebarPanel(
               selectInput("rosterTypePLTW", "Select School Level", choices= c("Elementary","Secondary" )),
               uiOutput("schoolSelectElemPLTW"), 
-              dateInput("startDate", "Class Start Date", value=lubridate::today()),
-              dateInput("endDate", "Class End Date", value=lubridate::today()),
+              dateInput("startDate", "Class Start Date", value=lubridate::today(), format = "mm/dd/yyyy"),
+              dateInput("endDate", "Class End Date", value=lubridate::today(), format = "mm/dd/yyyy"),
               downloadButton("downloadDataPLTW", "Download")
             ),
 
@@ -738,8 +738,7 @@ server <- function(input, output, session) {
       "roster_endDate",
       "sectionSchedule_periodStart", #
       "sectionSchedule_scheduleStart", #
-      "contacts_email", #
-      "function_IHTClassName" #
+      "contacts_email"
     )
 
 
