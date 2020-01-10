@@ -47,6 +47,8 @@ ui <- navbarPage( theme = shinytheme("slate"),
         
         p("This App is designed to prep ad-hoc exports from Infinite Campus to various other programs that require student Rosters."),
         p("Upload a file with the approriate column names from an ad-hoc from Campus and press the button 'Show Preperations'"),
+        a(href="https://docs.google.com/spreadsheets/d/1_Rm5L1kfQbUfEa2TgqVoGyS6LPjN_GjARe8amcx9Csg/edit?usp=sharing", "You can see templates for the upload here"),
+        br(),
 
 
         # Input: Select number of rows to display
