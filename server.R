@@ -65,7 +65,7 @@ server <- function(input, output, session) {
       # Select and rename variables
       select(c(
         "grade level" = student_grade,
-        "section" = function_IHTClassName,
+        "section" = student_homeroomTeacher,
         "student id" = student_studentNumber,
         "last name*" = student_lastName,
         "first name" = student_firstName,
@@ -90,7 +90,9 @@ server <- function(input, output, session) {
       distinct(student_studentNumber, .keep_all = T) %>%
       # fix the kindergarten output from campus to match what IHT needs
       mutate(student_grade = replace(student_grade, student_grade == "KF", "K")) %>%
-      unite("IHTClassName", function_IHTClassName, function_Schoolyear) %>%
+      mutate(sectionName = paste0("Period", sectionSchedule_scheduleStart))%>% 
+      mutate(schoolYear =  paste0(student_startYear, "-", cal_endYear))%>%
+      unite("IHTClassName", sectionName, schoolYear) %>%
       # Select and rename variables
       select(c(
         "grade level" = student_grade,
@@ -117,12 +119,13 @@ server <- function(input, output, session) {
       distinct(student_studentNumber, .keep_all = T) %>%
       # fix the kindergarten output from campus to match what IHT needs
       mutate(student_grade = replace(student_grade, student_grade == "KF", "K")) %>%
+      mutate(className = paste0("Period ", sectionSchedule_periodStart, " Day ", sectionSchedule_scheduleStart))%>%
       # filter out the teacher
       filter(str_detect(function_IHTClassName, pattern = input$periodDropdown)) %>%
       # Select and rename variables
       select(c(
         "grade level" = student_grade,
-        "section" = function_IHTClassName,
+        "section" = className,
         "student id" = student_studentNumber,
         "last name*" = student_lastName,
         "first name" = student_firstName,
@@ -721,6 +724,8 @@ server <- function(input, output, session) {
     }
 
     check <- c(
+      "cal_endYear", 
+      "student_startYear",
       "student_grade", #
       "student_homeroomTeacher", #
       "student_studentNumber", #
