@@ -54,6 +54,7 @@ server <- function(input, output, session) {
       as_tibble() %>%
       ## Remove duplicates
       distinct(student_studentNumber, .keep_all = T) %>%
+      filter(student_grade <=6) %>%
       # fix the kindergarten output from campus to match what IHT needs
       mutate(student_grade = replace(student_grade, student_grade == "KF", "K")) %>%
       # replace commas in classroom teacher display name to make splitting easier
@@ -88,8 +89,7 @@ server <- function(input, output, session) {
       as_tibble() %>%
       ## Remove duplicates
       distinct(student_studentNumber, .keep_all = T) %>%
-      # fix the kindergarten output from campus to match what IHT needs
-      mutate(student_grade = replace(student_grade, student_grade == "KF", "K")) %>%
+      filter(student_grade >=7 , student_grade <9)%>%
       mutate(sectionName = paste0("Period", sectionSchedule_scheduleStart))%>% 
       mutate(schoolYear =  paste0(student_startYear, "-", cal_endYear))%>%
       unite("IHTClassName", sectionName, schoolYear) %>%
@@ -108,6 +108,9 @@ server <- function(input, output, session) {
       add_column("email" = NA, .before = "secondary email") %>%
       add_column(height = NA, weight = NA, .before = "birthdate") %>%
       add_column(rhr = NA, max = NA, .after = "birthdate") -> ihtJH
+      
+      
+    
     return(ihtJH)
   })
 
@@ -117,11 +120,15 @@ server <- function(input, output, session) {
       as_tibble() %>%
       ## Remove duplicates
       distinct(student_studentNumber, .keep_all = T) %>%
-      # fix the kindergarten output from campus to match what IHT needs
-      mutate(student_grade = replace(student_grade, student_grade == "KF", "K")) %>%
-      mutate(className = paste0("Period ", sectionSchedule_periodStart, " Day ", sectionSchedule_scheduleStart))%>%
+      filter(student_grade >= 9) %>%
+      mutate(className = paste0("Period ", sectionSchedule_periodStart, 
+                                " Day ", sectionSchedule_scheduleStart, " ", 
+                                input$fallOrSpring, " ", 
+                                ifelse(input$fallOrSpring == "Fall", student_startYear, cal_endYear) 
+                                )
+             )%>%
       # filter out the teacher
-      filter(str_detect(function_IHTClassName, pattern = input$periodDropdown)) %>%
+      filter(str_detect(className, pattern = input$periodDropdown)) %>%
       # Select and rename variables
       select(c(
         "grade level" = student_grade,
@@ -563,6 +570,7 @@ server <- function(input, output, session) {
               uiOutput("schoolSelectIHT"),
               uiOutput("teacherSelect"),
               uiOutput("periodSelect"),
+              radioButtons("fallOrSpring", label="Fall or Spring?", choices = c("Fall", "Spring"), inline = T),
               downloadButton("downloadDataIHT", "Download")
             ),
 
@@ -617,15 +625,6 @@ server <- function(input, output, session) {
     shinyjs::hide("append")
   })
 
-  # eventReactive(input$file1, {
-  #   if (readyPLTW2() == T) {
-  #     insertTab(inputId = "tabs", )
-  #   }
-  #   else {
-  #     hideTab(inputId = "tabs", target = "PLTW")
-  #   }
-  # })
-  #
 
   ## File options for HMH
   output$hmhFileOptions <- renderUI({

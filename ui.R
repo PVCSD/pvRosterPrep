@@ -12,21 +12,6 @@ ui <- navbarPage( theme = shinytheme("slate"),
   "Rostering Preperation",
   id = "tabs",
 
-  # #### HOME PAGE #####
-  # tabPanel(
-  #   "Home",
-  #   h1("About this App"),
-  #   fluidRow(
-  #     column(width = 3, img(src = "spartanLogo.png", align = "center")),
-  #     column(
-  #       width = 9,
-  #       p("This App is designed to prep ad-hoc exports from Infinite Campus to various other programs that require student Rosters."),
-  #       p("Simply upload the ad hoc from campus on the upload tab. On the Prep tab select the options for the roster you need."),
-  #       p(tags$b("It is reccomended that this App be run in a full sized window"))
-  #     )
-  #   )
-  # ),
-
   #### UPLOAD PAGE #####
   ## right now this has file options, I may move those to the prep page.
   tabPanel(
