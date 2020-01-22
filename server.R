@@ -200,7 +200,7 @@ server <- function(input, output, session) {
     FileData() %>%
       distinct(student_studentNumber, .keep_all = T) %>%
       mutate(student_studentNumber, "ROLE" = ifelse(student_studentNumber >= 500000, "T", "S")) %>%
-      mutate("USERNAME" = gsub(" ", "", str_remove_all(tolower(paste0(student_firstName, student_lastName)), "[~!@#$%^&*(){}_+:<>?,./;'-]"))) %>%
+      mutate("USERNAME" = gsub(" ", "", str_remove_all(tolower(paste0(student_lastName, student_firstName)), "[~!@#$%^&*(){}_+:<>?,./;'-]"))) %>%
       add_column("MIDDLENAME" = NA, "ORGANIZATIONTYPEID" = "MDR", "ORGANIZATIONID" = 250932, "PRIMARYEMAIL" = NA, HMHAPPLICATIONS = "ED") %>%
       mutate("LASID" = student_studentNumber) %>%
       select(
