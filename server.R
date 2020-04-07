@@ -464,7 +464,7 @@ server <- function(input, output, session) {
   )
 
   ## Waterford
-  output$downloadDataWAterford <- downloadHandler(
+  output$downloadDataWaterford <- downloadHandler(
     filename = function() {
       paste("waterford", ".csv", sep = "")
     },
