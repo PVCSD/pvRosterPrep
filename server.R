@@ -90,7 +90,7 @@ server <- function(input, output, session) {
       ## Remove duplicates
       distinct(student_studentNumber, .keep_all = T) %>%
       filter(student_grade >=7 , student_grade <9)%>%
-      mutate(sectionName = paste0("Period", sectionSchedule_scheduleStart))%>% 
+      mutate(sectionName = paste0("Period", sectionSchedule_periodStart))%>% 
       mutate(schoolYear =  paste0(student_startYear, "-", cal_endYear))%>%
       unite("IHTClassName", sectionName, schoolYear) %>%
       # Select and rename variables
@@ -200,7 +200,7 @@ server <- function(input, output, session) {
     FileData() %>%
       distinct(student_studentNumber, .keep_all = T) %>%
       mutate(student_studentNumber, "ROLE" = ifelse(student_studentNumber >= 500000, "T", "S")) %>%
-      mutate("USERNAME" = gsub(" ", "", str_remove_all(tolower(paste0(student_lastName, student_firstName)), "[~!@#$%^&*(){}_+:<>?,./;'-]"))) %>%
+      mutate("USERNAME" = pcontact_email) %>%
       add_column("MIDDLENAME" = NA, "ORGANIZATIONTYPEID" = "MDR", "ORGANIZATIONID" = 250932, "PRIMARYEMAIL" = NA, HMHAPPLICATIONS = "ED") %>%
       mutate("LASID" = student_studentNumber) %>%
       select(
@@ -774,7 +774,8 @@ server <- function(input, output, session) {
       "courseSection_sectionNumber",
       "courseSection_courseName",
       "sectionSchedule_periodStart",
-      "cal_endYear"
+      "cal_endYear",
+      "pcontact_email"
     )
 
     test <- check %in% names(FileData())
